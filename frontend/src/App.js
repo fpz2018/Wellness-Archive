@@ -315,6 +315,10 @@ const KnowledgeBase = () => {
     }
   };
 
+  const viewDocument = (doc) => {
+    navigate(`/document/${doc.id}`);
+  };
+
   const handleViewDocument = async (docId) => {
     try {
       const response = await axios.get(`${API}/documents/${docId}`);

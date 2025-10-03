@@ -346,7 +346,7 @@ async def get_original_file(document_id: str):
         import gridfs
         from bson import ObjectId
         
-        fs = gridfs.GridFS(client[os.environ['DB_NAME']])
+        fs = gridfs.GridFS(sync_db)
         file_id = ObjectId(doc['original_file_id'])
         grid_out = fs.get(file_id)
         

@@ -51,6 +51,8 @@ class Document(BaseModel):
     file_size: Optional[int] = None
     original_filename: Optional[str] = None
     has_original_file: bool = False
+    original_language: Optional[str] = None
+    was_translated: bool = False
     original_filename: Optional[str] = None
     has_original_file: bool = False
 

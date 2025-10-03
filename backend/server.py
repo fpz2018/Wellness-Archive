@@ -326,15 +326,19 @@ async def upload_document(
         if file_id:
             doc_dict['original_file_id'] = str(file_id)
         
-        # Remove MongoDB's _id if present (it's an ObjectId and can't be serialized)
-        if '_id' in doc_dict:
-            del doc_dict['_id']
+        # Insert into database
+        result = await db.documents.insert_one(doc_dict)
         
-        await db.documents.insert_one(doc_dict)
+        # Fetch the inserted document to get clean data without ObjectId
+        inserted_doc = await db.documents.find_one({"id": doc.id})
+        
+        # Convert for JSON response (remove _id)
+        if inserted_doc and '_id' in inserted_doc:
+            del inserted_doc['_id']
         
         return {
             "message": "Document succesvol geüpload",
-            "document": doc_dict
+            "document": inserted_doc or doc_dict
         }
     except Exception as e:
         logging.error(f"Upload error: {str(e)}")

@@ -40,7 +40,9 @@ class Document(BaseModel):
     file_type: str
     content: str
     tags: List[str] = []
+    references: List[str] = []
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: Optional[str] = None
     file_size: Optional[int] = None
 
 class DocumentCreate(BaseModel):
@@ -49,7 +51,25 @@ class DocumentCreate(BaseModel):
     file_type: str
     content: str
     tags: List[str] = []
+    references: List[str] = []
     file_size: Optional[int] = None
+
+class DocumentUpdate(BaseModel):
+    title: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+    references: Optional[List[str]] = None
+    content: Optional[str] = None
+
+class Category(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class CategoryCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
 
 class ChatMessage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

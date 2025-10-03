@@ -211,8 +211,8 @@ const Dashboard = () => {
     setSelectedDocument(null);
   };
 
-  // View 1: Category Overview
-  if (!selectedCategory) {
+  // View 1: Main Dashboard
+  if (!selectedCategory && !selectedTag) {
     return (
       <div className="space-y-6" data-testid="dashboard">
         <div>

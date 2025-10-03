@@ -210,7 +210,7 @@ async def upload_document(
     title: Optional[str] = Form(None),
     category: str = Form("artikel")
 ):
-    """Upload a file and extract text with auto-generated tags"""
+    """Upload a file and extract text with auto-generated tags and references"""
     try:
         # Extract text from file
         content = await extract_text_from_file(file)
@@ -221,8 +221,9 @@ async def upload_document(
         # Use filename as title if not provided
         doc_title = title if title else file.filename.rsplit('.', 1)[0]
         
-        # Generate tags with AI
+        # Generate tags and extract references with AI
         tags = await generate_tags_with_ai(doc_title, content)
+        references = await extract_references_with_ai(content)
         
         # Determine file type
         file_type = file.filename.rsplit('.', 1)[1] if '.' in file.filename else 'unknown'
@@ -234,6 +235,7 @@ async def upload_document(
             file_type=file_type,
             content=content,
             tags=tags,
+            references=references,
             file_size=len(content)
         )
         
@@ -253,13 +255,14 @@ async def paste_document(
     content: str = Form(...),
     category: str = Form("aantekening")
 ):
-    """Create document from pasted text with auto-generated tags"""
+    """Create document from pasted text with auto-generated tags and references"""
     try:
         if not content.strip():
             raise HTTPException(status_code=400, detail="Inhoud mag niet leeg zijn")
         
-        # Generate tags with AI
+        # Generate tags and extract references with AI
         tags = await generate_tags_with_ai(title, content)
+        references = await extract_references_with_ai(content)
         
         # Create document
         doc = Document(
@@ -268,6 +271,7 @@ async def paste_document(
             file_type="text",
             content=content,
             tags=tags,
+            references=references,
             file_size=len(content)
         )
         

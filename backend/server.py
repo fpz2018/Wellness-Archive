@@ -224,7 +224,49 @@ async def upload_document(
         # Read file content
         file_content = await file.read()
         
-        # Extract text from file
+        # Determine file type
+        file_type = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'unknown'
+        
+        # Check if it's an image
+        is_image = file_type in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
+        is_pdf = file_type == 'pdf'
+        
+        # For images, we don't extract text but store the image
+        if is_image:
+            content = f"[Afbeelding: {file.filename}]"
+            doc_title = title if title else file.filename.rsplit('.', 1)[0]
+            
+            # Generate tags based on filename
+            tags = await generate_tags_with_ai(doc_title, f"Dit is een afbeelding met de naam: {doc_title}")
+            references = []
+            
+            # Store image in GridFS
+            import gridfs
+            fs = gridfs.GridFS(sync_db)
+            file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type or 'image/jpeg')
+            
+            doc = Document(
+                title=doc_title,
+                category=category,
+                file_type=file_type,
+                content=content,
+                tags=tags,
+                references=references,
+                file_size=len(file_content),
+                original_filename=file.filename,
+                has_original_file=True
+            )
+            
+            doc_dict = doc.dict()
+            doc_dict['original_file_id'] = str(file_id)
+            await db.documents.insert_one(doc_dict)
+            
+            return {
+                "message": "Afbeelding succesvol geüpload",
+                "document": doc.dict()
+            }
+        
+        # For PDFs and text files, extract text
         await file.seek(0)  # Reset file pointer
         content = await extract_text_from_file(file)
         
@@ -238,18 +280,14 @@ async def upload_document(
         tags = await generate_tags_with_ai(doc_title, content)
         references = await extract_references_with_ai(content)
         
-        # Determine file type
-        file_type = file.filename.rsplit('.', 1)[1] if '.' in file.filename else 'unknown'
-        
-        # Store original file in MongoDB GridFS for files
+        # Store original file for PDFs
         file_id = None
         has_original = False
         
-        # Only store original for PDF files (to keep database size manageable)
-        if file_type.lower() == 'pdf':
+        if is_pdf:
             import gridfs
             fs = gridfs.GridFS(sync_db)
-            file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type)
+            file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type or 'application/pdf')
             has_original = True
         
         # Create document

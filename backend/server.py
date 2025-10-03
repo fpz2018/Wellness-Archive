@@ -277,7 +277,7 @@ async def upload_document(
             
             return {
                 "message": "Afbeelding succesvol geüpload",
-                "document": doc.dict()
+                "document": doc_dict
             }
         
         # For PDFs and text files, extract text

@@ -125,14 +125,20 @@ const Dashboard = () => {
 const KnowledgeBase = () => {
   const [documents, setDocuments] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [newDoc, setNewDoc] = useState({
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importType, setImportType] = useState("paste"); // paste or upload
+  const [pasteForm, setPasteForm] = useState({
     title: "",
-    category: "artikel",
-    file_type: "text",
     content: "",
-    tags: ""
+    category: "artikel"
   });
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadForm, setUploadForm] = useState({
+    title: "",
+    category: "artikel"
+  });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -160,24 +166,59 @@ const KnowledgeBase = () => {
     }
   };
 
-  const handleAddDocument = async () => {
-    if (!newDoc.title || !newDoc.content) {
+  const handlePasteSubmit = async () => {
+    if (!pasteForm.title || !pasteForm.content) {
       toast.error("Titel en inhoud zijn verplicht");
       return;
     }
 
+    setUploading(true);
     try {
-      const docData = {
-        ...newDoc,
-        tags: newDoc.tags.split(",").map(tag => tag.trim()).filter(tag => tag)
-      };
-      await axios.post(`${API}/documents`, docData);
-      toast.success("Document toegevoegd!");
-      setNewDoc({ title: "", category: "artikel", file_type: "text", content: "", tags: "" });
-      setShowAddForm(false);
+      const formData = new FormData();
+      formData.append("title", pasteForm.title);
+      formData.append("content", pasteForm.content);
+      formData.append("category", pasteForm.category);
+
+      const response = await axios.post(`${API}/documents/paste`, formData);
+      toast.success("Document toegevoegd met AI-gegenereerde tags! 🎯");
+      setPasteForm({ title: "", content: "", category: "artikel" });
+      setShowImportModal(false);
       fetchDocuments();
     } catch (error) {
       toast.error("Fout bij toevoegen document");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!uploadFile) {
+      toast.error("Selecteer een bestand");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      formData.append("title", uploadForm.title || uploadFile.name);
+      formData.append("category", uploadForm.category);
+
+      const response = await axios.post(`${API}/documents/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      
+      toast.success("Bestand geüpload met AI-gegenereerde tags! 🎯");
+      setUploadFile(null);
+      setUploadForm({ title: "", category: "artikel" });
+      setShowImportModal(false);
+      fetchDocuments();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Fout bij uploaden");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -191,6 +232,15 @@ const KnowledgeBase = () => {
     }
   };
 
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      setUploadFile(file);
+      setImportType("upload");
+    }
+  };
+
   return (
     <div className="space-y-6" data-testid="knowledge-base">
       <div className="flex items-center justify-between">
@@ -198,68 +248,150 @@ const KnowledgeBase = () => {
           <h2 className="text-3xl font-bold tracking-tight">Kennisbank</h2>
           <p className="text-muted-foreground mt-2">Beheer al je artikelen, onderzoeken en aantekeningen</p>
         </div>
-        <Button onClick={() => setShowAddForm(!showAddForm)} data-testid="add-document-btn">
-          <Plus className="h-4 w-4 mr-2" />
-          Document Toevoegen
+        <Button onClick={() => setShowImportModal(true)} className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700" data-testid="import-document-btn">
+          <Upload className="h-4 w-4 mr-2" />
+          Kennis Importeren
         </Button>
       </div>
 
-      {showAddForm && (
-        <Card data-testid="add-document-form">
+      {/* Import Modal */}
+      {showImportModal && (
+        <Card className="border-2 border-teal-500 shadow-lg" data-testid="import-modal">
           <CardHeader>
-            <CardTitle>Nieuw Document</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-teal-600" />
+              Kennis Importeren (met AI Tag Generatie)
+            </CardTitle>
+            <CardDescription>Upload een bestand of plak tekst - AI genereert automatisch relevante tags</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input
-              placeholder="Titel"
-              value={newDoc.title}
-              onChange={(e) => setNewDoc({ ...newDoc, title: e.target.value })}
-              data-testid="doc-title-input"
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newDoc.category}
-                onChange={(e) => setNewDoc({ ...newDoc, category: e.target.value })}
-                data-testid="doc-category-select"
-              >
-                <option value="artikel">Artikel</option>
-                <option value="onderzoek">Onderzoek</option>
-                <option value="boek">Boek</option>
-                <option value="dictaat">Dictaat</option>
-                <option value="aantekening">Aantekening</option>
-                <option value="supplement">Supplement Info</option>
-                <option value="kruiden">Kruiden Info</option>
-              </select>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newDoc.file_type}
-                onChange={(e) => setNewDoc({ ...newDoc, file_type: e.target.value })}
-                data-testid="doc-filetype-select"
-              >
-                <option value="text">Text</option>
-                <option value="pdf">PDF</option>
-                <option value="docx">Word</option>
-                <option value="note">Notitie</option>
-              </select>
-            </div>
-            <Textarea
-              placeholder="Inhoud van het document..."
-              value={newDoc.content}
-              onChange={(e) => setNewDoc({ ...newDoc, content: e.target.value })}
-              rows={6}
-              data-testid="doc-content-textarea"
-            />
-            <Input
-              placeholder="Tags (gescheiden door komma's)"
-              value={newDoc.tags}
-              onChange={(e) => setNewDoc({ ...newDoc, tags: e.target.value })}
-              data-testid="doc-tags-input"
-            />
-            <div className="flex gap-2">
-              <Button onClick={handleAddDocument} data-testid="save-document-btn">Opslaan</Button>
-              <Button variant="outline" onClick={() => setShowAddForm(false)} data-testid="cancel-add-btn">Annuleren</Button>
-            </div>
+            <Tabs value={importType} onValueChange={setImportType}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="paste" data-testid="paste-tab">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Tekst Plakken
+                </TabsTrigger>
+                <TabsTrigger value="upload" data-testid="upload-tab">
+                  <FileUp className="h-4 w-4 mr-2" />
+                  Bestand Uploaden
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Paste Content */}
+              <TabsContent value="paste" className="space-y-4 mt-4">
+                <Input
+                  placeholder="Titel van het document"
+                  value={pasteForm.title}
+                  onChange={(e) => setPasteForm({ ...pasteForm, title: e.target.value })}
+                  data-testid="paste-title-input"
+                />
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={pasteForm.category}
+                  onChange={(e) => setPasteForm({ ...pasteForm, category: e.target.value })}
+                  data-testid="paste-category-select"
+                >
+                  <option value="artikel">Artikel</option>
+                  <option value="onderzoek">Onderzoek</option>
+                  <option value="boek">Boek</option>
+                  <option value="dictaat">Dictaat</option>
+                  <option value="aantekening">Aantekening</option>
+                  <option value="supplement">Supplement Info</option>
+                  <option value="kruiden">Kruiden Info</option>
+                </select>
+                <Textarea
+                  placeholder="Plak hier de tekst van je document..."
+                  value={pasteForm.content}
+                  onChange={(e) => setPasteForm({ ...pasteForm, content: e.target.value })}
+                  rows={12}
+                  data-testid="paste-content-textarea"
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handlePasteSubmit} 
+                    disabled={uploading}
+                    className="bg-teal-600 hover:bg-teal-700"
+                    data-testid="paste-submit-btn"
+                  >
+                    {uploading ? "Verwerken..." : "Opslaan met AI Tags"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowImportModal(false)} data-testid="cancel-import-btn">
+                    Annuleren
+                  </Button>
+                </div>
+              </TabsContent>
+
+              {/* Upload File */}
+              <TabsContent value="upload" className="space-y-4 mt-4">
+                <Input
+                  placeholder="Titel (optioneel, gebruikt bestandsnaam als leeg)"
+                  value={uploadForm.title}
+                  onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
+                  data-testid="upload-title-input"
+                />
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={uploadForm.category}
+                  onChange={(e) => setUploadForm({ ...uploadForm, category: e.target.value })}
+                  data-testid="upload-category-select"
+                >
+                  <option value="artikel">Artikel</option>
+                  <option value="onderzoek">Onderzoek</option>
+                  <option value="boek">Boek</option>
+                  <option value="dictaat">Dictaat</option>
+                  <option value="aantekening">Aantekening</option>
+                  <option value="supplement">Supplement Info</option>
+                  <option value="kruiden">Kruiden Info</option>
+                </select>
+
+                {/* Drag and Drop Zone */}
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-teal-500 transition-colors"
+                  onDrop={handleFileDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                  onClick={() => fileInputRef.current?.click()}
+                  data-testid="file-drop-zone"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.docx,.txt"
+                    onChange={(e) => setUploadFile(e.target.files[0])}
+                    className="hidden"
+                    data-testid="file-input"
+                  />
+                  {uploadFile ? (
+                    <div className="space-y-2">
+                      <FileText className="h-12 w-12 mx-auto text-teal-600" />
+                      <p className="font-medium">{uploadFile.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(uploadFile.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="h-12 w-12 mx-auto text-gray-400" />
+                      <p className="text-sm font-medium">Sleep een bestand hierheen of klik om te selecteren</p>
+                      <p className="text-xs text-muted-foreground">Ondersteund: PDF, DOCX, TXT</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleFileUpload} 
+                    disabled={uploading || !uploadFile}
+                    className="bg-teal-600 hover:bg-teal-700"
+                    data-testid="upload-submit-btn"
+                  >
+                    {uploading ? "Uploaden..." : "Upload met AI Tags"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowImportModal(false)}>
+                    Annuleren
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       )}
@@ -281,7 +413,7 @@ const KnowledgeBase = () => {
         {documents.length === 0 ? (
           <Card>
             <CardContent className="py-10 text-center">
-              <p className="text-muted-foreground">Geen documenten gevonden</p>
+              <p className="text-muted-foreground">Nog geen documenten. Begin met importeren!</p>
             </CardContent>
           </Card>
         ) : (
@@ -309,7 +441,7 @@ const KnowledgeBase = () => {
                 <p className="text-sm text-muted-foreground line-clamp-3">{doc.content}</p>
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {doc.tags.map((tag, idx) => (
-                    <Badge key={idx} variant="secondary">{tag}</Badge>
+                    <Badge key={idx} variant="secondary" className="bg-teal-100 text-teal-800">{tag}</Badge>
                   ))}
                 </div>
               </CardContent>

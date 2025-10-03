@@ -663,7 +663,7 @@ const KnowledgeBase = () => {
                     <div className="space-y-2">
                       <Upload className="h-12 w-12 mx-auto text-gray-400" />
                       <p className="text-sm font-medium">Sleep een bestand hierheen of klik om te selecteren</p>
-                      <p className="text-xs text-muted-foreground">Ondersteund: PDF, DOCX, TXT</p>
+                      <p className="text-xs text-muted-foreground">Ondersteund: PDF, DOCX, TXT, JPG, PNG, GIF</p>
                     </div>
                   )}
                 </div>

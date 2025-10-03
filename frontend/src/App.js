@@ -17,6 +17,127 @@ import { BookOpen, MessageSquare, FileText, Pill, Search, Upload, Plus, Trash2, 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Category Management Component
+const CategoryManager = ({ onCategoryAdded }) => {
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState({ name: "", description: "" });
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategory.name.trim()) {
+      toast.error("Categorie naam is verplicht");
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/categories`, newCategory);
+      toast.success("Categorie toegevoegd!");
+      setNewCategory({ name: "", description: "" });
+      setShowAddForm(false);
+      fetchCategories();
+      if (onCategoryAdded) onCategoryAdded();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Fout bij toevoegen categorie");
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    try {
+      await axios.delete(`${API}/categories/${id}`);
+      toast.success("Categorie verwijderd");
+      fetchCategories();
+      if (onCategoryAdded) onCategoryAdded();
+    } catch (error) {
+      toast.error("Fout bij verwijderen");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Categorieën Beheren</h3>
+        <Button
+          size="sm"
+          onClick={() => setShowAddForm(!showAddForm)}
+          data-testid="toggle-category-form-btn"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Nieuwe Categorie
+        </Button>
+      </div>
+
+      {showAddForm && (
+        <Card>
+          <CardContent className="pt-6 space-y-3">
+            <Input
+              placeholder="Categorie naam"
+              value={newCategory.name}
+              onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+              data-testid="category-name-input"
+            />
+            <Input
+              placeholder="Beschrijving (optioneel)"
+              value={newCategory.description}
+              onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+              data-testid="category-description-input"
+            />
+            <div className="flex gap-2">
+              <Button onClick={handleAddCategory} size="sm" data-testid="save-category-btn">
+                Opslaan
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddForm(false)}
+              >
+                Annuleren
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        {categories.map((cat) => (
+          <div
+            key={cat.id}
+            className="flex items-center justify-between p-3 rounded-lg border bg-white"
+            data-testid={`category-item-${cat.id}`}
+          >
+            <div className="flex-1">
+              <p className="font-medium text-sm">{cat.name}</p>
+              {cat.description && (
+                <p className="text-xs text-muted-foreground">{cat.description}</p>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleDeleteCategory(cat.id)}
+              data-testid={`delete-category-${cat.id}`}
+            >
+              <Trash2 className="h-4 w-4 text-red-500" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [stats, setStats] = useState({ total_documents: 0, categories: {} });
   const [documents, setDocuments] = useState([]);

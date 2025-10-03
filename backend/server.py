@@ -157,6 +157,44 @@ Antwoord alleen met de tags, niets anders."""
         logging.error(f"Error generating tags: {str(e)}")
         return ["orthomoleculair", "kennis"]  # Default tags
 
+# Helper function to extract references with AI
+async def extract_references_with_ai(content: str) -> List[str]:
+    """Extract references/sources from content using Claude AI"""
+    try:
+        session_id = str(uuid.uuid4())
+        chat = LlmChat(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            session_id=session_id,
+            system_message="Je bent een expert in het identificeren van wetenschappelijke referenties en bronnen in medische documenten."
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        
+        prompt = f"""Analyseer deze tekst en identificeer alle referenties, bronnen, studies of citaten:
+
+{content[:2000]}...
+
+Geef alleen de gevonden referenties terug, elke referentie op een nieuwe regel.
+Als er geen referenties zijn, antwoord dan met: GEEN
+
+Formaat:
+- Auteur (jaar) - Titel
+- Journal naam, volume, pagina's
+- URL indien vermeld
+
+Antwoord alleen met de referenties of GEEN."""
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        if response.strip().upper() == "GEEN":
+            return []
+        
+        # Parse references
+        references = [ref.strip() for ref in response.split('\n') if ref.strip() and not ref.strip().startswith('-')]
+        return references[:10]  # Max 10 references
+    except Exception as e:
+        logging.error(f"Error extracting references: {str(e)}")
+        return []
+
 # Document routes
 @api_router.post("/documents", response_model=Document)
 async def create_document(doc: DocumentCreate):

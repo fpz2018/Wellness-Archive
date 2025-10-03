@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 import os
 import logging
 from pathlib import Path
@@ -21,10 +22,14 @@ import tempfile
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# MongoDB connection - async for normal operations
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Sync MongoDB client for GridFS operations
+sync_client = MongoClient(mongo_url)
+sync_db = sync_client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
 app = FastAPI()

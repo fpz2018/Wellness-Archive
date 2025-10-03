@@ -1158,6 +1158,8 @@ const DocumentDetail = () => {
     </div>
   );
 };
+
+const ConsultAssistant = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sessionId] = useState(`session-${Date.now()}`);

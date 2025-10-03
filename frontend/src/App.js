@@ -471,12 +471,45 @@ const Dashboard = () => {
   // View 4: Document Details
   if (selectedDocument) {
     const backLabel = selectedTag ? selectedTag : selectedCategory;
+    
+    const handleEdit = () => {
+      navigate(`/document/${selectedDocument.id}`);
+    };
+    
+    const handleDelete = async () => {
+      if (window.confirm(`Weet je zeker dat je "${selectedDocument.title}" wilt verwijderen?`)) {
+        try {
+          await axios.delete(`${API}/documents/${selectedDocument.id}`);
+          toast.success("Document verwijderd");
+          handleBackToList();
+          // Refresh the list
+          if (selectedTag) {
+            handleTagClick(selectedTag);
+          } else if (selectedCategory) {
+            handleCategoryClick(selectedCategory);
+          }
+        } catch (error) {
+          toast.error("Fout bij verwijderen");
+        }
+      }
+    };
+    
     return (
       <div className="space-y-6" data-testid="document-detail-view">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
           <Button variant="outline" onClick={handleBackToList} data-testid="back-to-documents-btn">
             ← Terug naar {backLabel}
           </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleEdit} data-testid="edit-document-btn">
+              <Edit className="h-4 w-4 mr-2" />
+              Bewerken
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} data-testid="delete-document-btn">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Verwijderen
+            </Button>
+          </div>
         </div>
 
         <Card>

@@ -231,14 +231,42 @@ async def upload_document(
         is_image = file_type in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
         is_pdf = file_type == 'pdf'
         
-        # For images, we don't extract text but store the image
+        # For images, extract text using AI vision
         if is_image:
-            content = f"[Afbeelding: {file.filename}]"
             doc_title = title if title else file.filename.rsplit('.', 1)[0]
             
-            # Generate tags based on filename
-            tags = await generate_tags_with_ai(doc_title, f"Dit is een afbeelding met de naam: {doc_title}")
-            references = []
+            # Convert image to base64 for Claude vision
+            import base64
+            image_base64 = base64.b64encode(file_content).decode('utf-8')
+            
+            # Use Claude to extract text from image
+            try:
+                session_id = str(uuid.uuid4())
+                chat = LlmChat(
+                    api_key=os.environ.get('EMERGENT_LLM_KEY'),
+                    session_id=session_id,
+                    system_message="Je bent een expert in het lezen en transcriberen van tekst uit afbeeldingen. Extraheer alle tekst die je ziet."
+                ).with_model("anthropic", "claude-4-sonnet-20250514")
+                
+                # Create vision message
+                from emergentintegrations.llm.chat import ImageMessage
+                image_msg = ImageMessage(
+                    image_data=image_base64,
+                    text="Extraheer alle tekst uit deze afbeelding. Geef de tekst precies weer zoals je het ziet, inclusief structuur en opmaak. Als er geen tekst is, beschrijf dan wat je ziet op de afbeelding."
+                )
+                
+                content = await chat.send_message(image_msg)
+                
+                if not content or len(content.strip()) < 10:
+                    content = f"[Afbeelding: {file.filename}]\n\nGeen tekst gedetecteerd in de afbeelding."
+                    
+            except Exception as e:
+                logging.error(f"Error extracting text from image: {str(e)}")
+                content = f"[Afbeelding: {file.filename}]\n\nTekst extractie niet mogelijk."
+            
+            # Generate tags and references based on extracted content
+            tags = await generate_tags_with_ai(doc_title, content)
+            references = await extract_references_with_ai(content)
             
             # Store image in GridFS
             import gridfs
@@ -262,7 +290,7 @@ async def upload_document(
             await db.documents.insert_one(doc_dict)
             
             return {
-                "message": "Afbeelding succesvol geüpload",
+                "message": "Afbeelding succesvol geüpload en tekst geëxtraheerd",
                 "document": doc.dict()
             }
         

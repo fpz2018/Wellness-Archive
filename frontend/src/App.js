@@ -1517,6 +1517,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/knowledge" element={<KnowledgeBase />} />
+            <Route path="/document/:id" element={<DocumentDetail />} />
             <Route path="/consult" element={<ConsultAssistant />} />
             <Route path="/treatment" element={<TreatmentPlan />} />
             <Route path="/supplements" element={<SupplementAdvice />} />

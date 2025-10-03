@@ -142,7 +142,9 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ total_documents: 0, categories: {} });
   const [documents, setDocuments] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedTag, setSelectedTag] = useState(null);
   const [categoryDocuments, setCategoryDocuments] = useState([]);
+  const [tagDocuments, setTagDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const navigate = useNavigate();
 
@@ -171,6 +173,7 @@ const Dashboard = () => {
 
   const handleCategoryClick = async (categoryName) => {
     setSelectedCategory(categoryName);
+    setSelectedTag(null);
     setSelectedDocument(null);
     try {
       const response = await axios.get(`${API}/documents?category=${categoryName}`);
@@ -180,17 +183,31 @@ const Dashboard = () => {
     }
   };
 
+  const handleTagClick = async (tagName) => {
+    setSelectedTag(tagName);
+    setSelectedCategory(null);
+    setSelectedDocument(null);
+    try {
+      const response = await axios.get(`${API}/documents/by-tag/${encodeURIComponent(tagName)}`);
+      setTagDocuments(response.data);
+    } catch (error) {
+      toast.error("Fout bij ophalen documenten met tag");
+    }
+  };
+
   const handleDocumentClick = (doc) => {
     setSelectedDocument(doc);
   };
 
-  const handleBackToCategories = () => {
+  const handleBackToMain = () => {
     setSelectedCategory(null);
+    setSelectedTag(null);
     setSelectedDocument(null);
     setCategoryDocuments([]);
+    setTagDocuments([]);
   };
 
-  const handleBackToDocuments = () => {
+  const handleBackToList = () => {
     setSelectedDocument(null);
   };
 

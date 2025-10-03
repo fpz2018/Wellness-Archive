@@ -124,9 +124,13 @@ const Dashboard = () => {
 
 const KnowledgeBase = () => {
   const [documents, setDocuments] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showImportModal, setShowImportModal] = useState(false);
-  const [importType, setImportType] = useState("paste"); // paste or upload
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [importType, setImportType] = useState("paste");
   const [pasteForm, setPasteForm] = useState({
     title: "",
     content: "",
@@ -137,12 +141,33 @@ const KnowledgeBase = () => {
     title: "",
     category: "artikel"
   });
+  const [editForm, setEditForm] = useState({
+    title: "",
+    category: "",
+    tags: "",
+    references: "",
+    content: ""
+  });
+  const [newCategory, setNewCategory] = useState({
+    name: "",
+    description: ""
+  });
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchDocuments();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
 
   const fetchDocuments = async () => {
     try {
@@ -166,6 +191,72 @@ const KnowledgeBase = () => {
     }
   };
 
+  const handleViewDocument = async (docId) => {
+    try {
+      const response = await axios.get(`${API}/documents/${docId}`);
+      setSelectedDoc(response.data);
+      setEditForm({
+        title: response.data.title,
+        category: response.data.category,
+        tags: response.data.tags.join(", "),
+        references: response.data.references.join("\n"),
+        content: response.data.content
+      });
+      setEditMode(false);
+    } catch (error) {
+      toast.error("Fout bij ophalen document");
+    }
+  };
+
+  const handleUpdateDocument = async () => {
+    if (!selectedDoc) return;
+
+    try {
+      const updateData = {
+        title: editForm.title,
+        category: editForm.category,
+        tags: editForm.tags.split(",").map(t => t.trim()).filter(t => t),
+        references: editForm.references.split("\n").map(r => r.trim()).filter(r => r),
+        content: editForm.content
+      };
+
+      await axios.put(`${API}/documents/${selectedDoc.id}`, updateData);
+      toast.success("Document bijgewerkt!");
+      setEditMode(false);
+      fetchDocuments();
+      handleViewDocument(selectedDoc.id);
+    } catch (error) {
+      toast.error("Fout bij bijwerken document");
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategory.name.trim()) {
+      toast.error("Categorie naam is verplicht");
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/categories`, newCategory);
+      toast.success("Categorie toegevoegd!");
+      setNewCategory({ name: "", description: "" });
+      setShowCategoryModal(false);
+      fetchCategories();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Fout bij toevoegen categorie");
+    }
+  };
+
+  const handleDeleteCategory = async (catId) => {
+    try {
+      await axios.delete(`${API}/categories/${catId}`);
+      toast.success("Categorie verwijderd");
+      fetchCategories();
+    } catch (error) {
+      toast.error("Fout bij verwijderen categorie");
+    }
+  };
+
   const handlePasteSubmit = async () => {
     if (!pasteForm.title || !pasteForm.content) {
       toast.error("Titel en inhoud zijn verplicht");
@@ -180,7 +271,7 @@ const KnowledgeBase = () => {
       formData.append("category", pasteForm.category);
 
       const response = await axios.post(`${API}/documents/paste`, formData);
-      toast.success("Document toegevoegd met AI-gegenereerde tags! 🎯");
+      toast.success("Document toegevoegd met AI-gegenereerde tags & referenties! 🎯");
       setPasteForm({ title: "", content: "", category: "artikel" });
       setShowImportModal(false);
       fetchDocuments();
@@ -210,7 +301,7 @@ const KnowledgeBase = () => {
         }
       });
       
-      toast.success("Bestand geüpload met AI-gegenereerde tags! 🎯");
+      toast.success("Bestand geüpload met AI-gegenereerde tags & referenties! 🎯");
       setUploadFile(null);
       setUploadForm({ title: "", category: "artikel" });
       setShowImportModal(false);
@@ -226,6 +317,9 @@ const KnowledgeBase = () => {
     try {
       await axios.delete(`${API}/documents/${id}`);
       toast.success("Document verwijderd");
+      if (selectedDoc?.id === id) {
+        setSelectedDoc(null);
+      }
       fetchDocuments();
     } catch (error) {
       toast.error("Fout bij verwijderen");
@@ -240,6 +334,90 @@ const KnowledgeBase = () => {
       setImportType("upload");
     }
   };
+
+  // Get all category names (custom + default)
+  const allCategories = [
+    ...categories.map(c => c.name),
+    "artikel", "onderzoek", "boek", "dictaat", "aantekening", "supplement", "kruiden"
+  ];
+  const uniqueCategories = [...new Set(allCategories)];
+
+  return (
+    <div className="space-y-6" data-testid="knowledge-base">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Kennisbank</h2>
+          <p className="text-muted-foreground mt-2">Beheer al je artikelen, onderzoeken en aantekeningen</p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowCategoryModal(true)} variant="outline" data-testid="manage-categories-btn">
+            <Settings className="h-4 w-4 mr-2" />
+            Categorieën
+          </Button>
+          <Button onClick={() => setShowImportModal(true)} className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700" data-testid="import-document-btn">
+            <Upload className="h-4 w-4 mr-2" />
+            Kennis Importeren
+          </Button>
+        </div>
+      </div>
+
+      {/* Category Management Modal */}
+      {showCategoryModal && (
+        <Card className="border-2 border-blue-500 shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Categorieën Beheren</CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setShowCategoryModal(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                placeholder="Nieuwe categorie naam"
+                value={newCategory.name}
+                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                data-testid="new-category-name"
+              />
+              <Input
+                placeholder="Beschrijving (optioneel)"
+                value={newCategory.description}
+                onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                data-testid="new-category-description"
+              />
+              <Button onClick={handleAddCategory} className="w-full" data-testid="add-category-btn">
+                <Plus className="h-4 w-4 mr-2" />
+                Categorie Toevoegen
+              </Button>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <h4 className="font-semibold">Aangepaste Categorieën</h4>
+              {categories.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nog geen aangepaste categorieën</p>
+              ) : (
+                categories.map((cat) => (
+                  <div key={cat.id} className="flex items-center justify-between p-2 rounded border">
+                    <div>
+                      <p className="font-medium">{cat.name}</p>
+                      {cat.description && <p className="text-xs text-muted-foreground">{cat.description}</p>}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteCategory(cat.id)}
+                      data-testid={`delete-category-${cat.id}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
   return (
     <div className="space-y-6" data-testid="knowledge-base">

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { BookOpen, MessageSquare, FileText, Pill, Search, Upload, Plus, Trash2, Brain, Library, Activity, Download, FileUp, Copy, Edit, Save, X, Eye, Settings } from "lucide-react";
 

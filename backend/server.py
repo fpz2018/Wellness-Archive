@@ -492,6 +492,14 @@ async def search_documents(query: str):
     }).to_list(100)
     return [Document(**doc) for doc in documents]
 
+@api_router.get("/documents/by-tag/{tag}")
+async def get_documents_by_tag(tag: str):
+    """Get all documents that have a specific tag"""
+    documents = await db.documents.find({
+        "tags": {"$regex": f"^{tag}$", "$options": "i"}
+    }).sort("created_at", -1).to_list(1000)
+    return [Document(**doc) for doc in documents]
+
 # Category routes
 @api_router.post("/categories", response_model=Category)
 async def create_category(cat: CategoryCreate):

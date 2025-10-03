@@ -1032,6 +1032,28 @@ const DocumentDetail = () => {
         </div>
       </div>
 
+      {/* Show original file if available */}
+      {document.has_original_file && document.file_type === 'pdf' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Origineel Document
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="border rounded-lg overflow-hidden" style={{ height: '600px' }}>
+              <iframe
+                src={`${API}/documents/${id}/file`}
+                className="w-full h-full"
+                title="Original Document"
+                data-testid="original-document-viewer"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           {editMode ? (

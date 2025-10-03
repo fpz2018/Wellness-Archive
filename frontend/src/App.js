@@ -141,6 +141,9 @@ const CategoryManager = ({ onCategoryAdded }) => {
 const Dashboard = () => {
   const [stats, setStats] = useState({ total_documents: 0, categories: {} });
   const [documents, setDocuments] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categoryDocuments, setCategoryDocuments] = useState([]);
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -166,82 +169,270 @@ const Dashboard = () => {
     }
   };
 
-  return (
-    <div className="space-y-6" data-testid="dashboard">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground mt-2">
-          Overzicht van je kennisbank en recente activiteiten
-        </p>
-      </div>
+  const handleCategoryClick = async (categoryName) => {
+    setSelectedCategory(categoryName);
+    setSelectedDocument(null);
+    try {
+      const response = await axios.get(`${API}/documents?category=${categoryName}`);
+      setCategoryDocuments(response.data);
+    } catch (error) {
+      toast.error("Fout bij ophalen documenten");
+    }
+  };
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card data-testid="stats-total-docs">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Totaal Documenten</CardTitle>
-            <Library className="h-4 w-4 text-teal-600" />
+  const handleDocumentClick = (doc) => {
+    setSelectedDocument(doc);
+  };
+
+  const handleBackToCategories = () => {
+    setSelectedCategory(null);
+    setSelectedDocument(null);
+    setCategoryDocuments([]);
+  };
+
+  const handleBackToDocuments = () => {
+    setSelectedDocument(null);
+  };
+
+  // View 1: Category Overview
+  if (!selectedCategory) {
+    return (
+      <div className="space-y-6" data-testid="dashboard">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground mt-2">
+            Overzicht van je kennisbank en categorieën
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card data-testid="stats-total-docs">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Totaal Documenten</CardTitle>
+              <Library className="h-4 w-4 text-teal-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.total_documents}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Alle documenten in kennisbank
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="stats-categories">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Categorieën</CardTitle>
+              <FileText className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{Object.keys(stats.categories).length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Verschillende categorieën
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/consult')} data-testid="quick-consult-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Consult Assistent</CardTitle>
+              <Brain className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">Start een consult →</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Categories Grid */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Categorieën</CardTitle>
+            <CardDescription>Klik op een categorie om alle documenten te bekijken</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_documents}</div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="stats-categories">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categorieën</CardTitle>
-            <FileText className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{Object.keys(stats.categories).length}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/consult')} data-testid="quick-consult-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Consult Assistent</CardTitle>
-            <Brain className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Start een consult →</p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/treatment')} data-testid="quick-treatment-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Behandelplan</CardTitle>
-            <Activity className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Maak behandelplan →</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recente Documenten</CardTitle>
-          <CardDescription>Laatst toegevoegde kennis aan je database</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {documents.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nog geen documenten toegevoegd</p>
-            ) : (
-              documents.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors" data-testid={`doc-item-${doc.id}`}>
-                  <div className="flex-1">
-                    <p className="font-medium">{doc.title}</p>
-                    <p className="text-xs text-muted-foreground">{doc.category}</p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(stats.categories).map(([categoryName, count]) => (
+                <div
+                  key={categoryName}
+                  onClick={() => handleCategoryClick(categoryName)}
+                  className="p-6 border rounded-lg hover:border-teal-500 hover:bg-teal-50 cursor-pointer transition-all group"
+                  data-testid={`category-card-${categoryName}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-semibold capitalize group-hover:text-teal-700">
+                      {categoryName}
+                    </h3>
+                    <FileText className="h-5 w-5 text-gray-400 group-hover:text-teal-600" />
                   </div>
-                  <Badge variant="outline">{doc.file_type}</Badge>
+                  <p className="text-2xl font-bold text-teal-600">{count}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {count === 1 ? 'document' : 'documenten'}
+                  </p>
                 </div>
-              ))
-            )}
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Documents */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recente Documenten</CardTitle>
+            <CardDescription>Laatst toegevoegde kennis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {documents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nog geen documenten toegevoegd</p>
+              ) : (
+                documents.map((doc) => (
+                  <div 
+                    key={doc.id} 
+                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors cursor-pointer" 
+                    data-testid={`doc-item-${doc.id}`}
+                    onClick={() => navigate('/knowledge')}
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{doc.title}</p>
+                      <p className="text-xs text-muted-foreground">{doc.category}</p>
+                    </div>
+                    <Badge variant="outline">{doc.file_type}</Badge>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // View 2: Documents in Category
+  if (selectedCategory && !selectedDocument) {
+    return (
+      <div className="space-y-6" data-testid="category-documents-view">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={handleBackToCategories} data-testid="back-to-categories-btn">
+            ← Terug naar Dashboard
+          </Button>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight capitalize">{selectedCategory}</h2>
+            <p className="text-muted-foreground mt-2">
+              {categoryDocuments.length} {categoryDocuments.length === 1 ? 'document' : 'documenten'}
+            </p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+        </div>
+
+        <div className="grid gap-4">
+          {categoryDocuments.length === 0 ? (
+            <Card>
+              <CardContent className="py-10 text-center">
+                <p className="text-muted-foreground">Geen documenten in deze categorie</p>
+              </CardContent>
+            </Card>
+          ) : (
+            categoryDocuments.map((doc) => (
+              <Card 
+                key={doc.id} 
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => handleDocumentClick(doc)}
+                data-testid={`category-doc-${doc.id}`}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-xl">{doc.title}</CardTitle>
+                      <CardDescription className="mt-1">
+                        {new Date(doc.created_at).toLocaleDateString('nl-NL')}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline">{doc.file_type}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{doc.content}</p>
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {doc.tags.slice(0, 5).map((tag, idx) => (
+                      <Badge key={idx} variant="secondary" className="bg-teal-100 text-teal-800">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {doc.tags.length > 5 && (
+                      <Badge variant="secondary">+{doc.tags.length - 5}</Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // View 3: Document Details
+  if (selectedDocument) {
+    return (
+      <div className="space-y-6" data-testid="document-detail-view">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={handleBackToDocuments} data-testid="back-to-documents-btn">
+            ← Terug naar {selectedCategory}
+          </Button>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-3xl">{selectedDocument.title}</CardTitle>
+            <CardDescription>
+              {selectedDocument.category} • {new Date(selectedDocument.created_at).toLocaleDateString('nl-NL')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Tags */}
+            <div>
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Tags
+              </h3>
+              <div className="flex gap-2 flex-wrap">
+                {selectedDocument.tags.map((tag, idx) => (
+                  <Badge key={idx} variant="secondary" className="bg-teal-100 text-teal-800">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* References */}
+            {selectedDocument.references && selectedDocument.references.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Referenties</h3>
+                <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
+                  {selectedDocument.references.map((ref, idx) => (
+                    <p key={idx} className="text-sm text-gray-700">• {ref}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Content */}
+            <div>
+              <h3 className="font-semibold mb-3">Inhoud</h3>
+              <div className="prose prose-sm max-w-none">
+                <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">
+                  {selectedDocument.content}
+                </pre>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 const KnowledgeBase = () => {

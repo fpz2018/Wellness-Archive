@@ -692,6 +692,22 @@ const KnowledgeBase = () => {
     }
   };
 
+  const handleDeleteDocument = async () => {
+    if (!selectedDoc) return;
+    
+    if (window.confirm(`Weet je zeker dat je "${selectedDoc.title}" wilt verwijderen?`)) {
+      try {
+        await axios.delete(`${API}/documents/${selectedDoc.id}`);
+        toast.success("Document verwijderd");
+        setSelectedDoc(null);
+        setEditMode(false);
+        fetchDocuments();
+      } catch (error) {
+        toast.error("Fout bij verwijderen document");
+      }
+    }
+  };
+
   const handleAddCategory = async () => {
     if (!newCategory.name.trim()) {
       toast.error("Categorie naam is verplicht");

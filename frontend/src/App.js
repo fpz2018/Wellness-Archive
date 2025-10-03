@@ -1126,7 +1126,7 @@ const KnowledgeBase = () => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={handleDeleteDocument}
+                    onClick={handleDeleteSelectedDocument}
                     data-testid="delete-doc-btn"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />

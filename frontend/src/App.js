@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { BookOpen, MessageSquare, FileText, Pill, Search, Upload, Plus, Trash2, Brain, Library, Activity, Download, FileUp, Copy } from "lucide-react";
+import { BookOpen, MessageSquare, FileText, Pill, Search, Upload, Plus, Trash2, Brain, Library, Activity, Download, FileUp, Copy, Edit, Save, X, Eye, Settings } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;

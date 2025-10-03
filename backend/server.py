@@ -242,44 +242,64 @@ async def upload_document(
             # Use Claude to extract text from image
             try:
                 session_id = str(uuid.uuid4())
-                chat = LlmChat(
-                    api_key=os.environ.get('EMERGENT_LLM_KEY'),
-                    session_id=session_id,
-                    system_message="Je bent een expert in het lezen en transcriberen van tekst uit afbeeldingen. Extraheer alle tekst die je ziet."
-                ).with_model("anthropic", "claude-4-sonnet-20250514")
                 
-                # Create vision message with FileContent
-                from emergentintegrations.llm.chat import FileContent
-                
-                # Determine content type
-                content_type_map = {
+                # Determine media type
+                media_type_map = {
                     'jpg': 'image/jpeg',
                     'jpeg': 'image/jpeg',
                     'png': 'image/png',
                     'gif': 'image/gif',
-                    'bmp': 'image/bmp',
                     'webp': 'image/webp'
                 }
-                content_type = content_type_map.get(file_type, 'image/jpeg')
+                media_type = media_type_map.get(file_type, 'image/jpeg')
                 
-                file_content_obj = FileContent(
-                    content_type=content_type,
-                    file_content_base64=image_base64
+                # Use direct Anthropic API call for vision
+                import requests
+                api_key = os.environ.get('EMERGENT_LLM_KEY')
+                
+                response = requests.post(
+                    'https://api.emergentagi.com/anthropic/messages',
+                    headers={
+                        'x-api-key': api_key,
+                        'anthropic-version': '2023-06-01',
+                        'content-type': 'application/json'
+                    },
+                    json={
+                        'model': 'claude-4-sonnet-20250514',
+                        'max_tokens': 4096,
+                        'messages': [{
+                            'role': 'user',
+                            'content': [
+                                {
+                                    'type': 'image',
+                                    'source': {
+                                        'type': 'base64',
+                                        'media_type': media_type,
+                                        'data': image_base64
+                                    }
+                                },
+                                {
+                                    'type': 'text',
+                                    'text': 'Extraheer alle tekst uit deze afbeelding. Geef de tekst precies weer zoals je het ziet, inclusief structuur en opmaak. Als er geen tekst is, beschrijf dan kort wat je ziet op de afbeelding (maximaal 3 zinnen).'
+                                }
+                            ]
+                        }]
+                    }
                 )
                 
-                vision_message = UserMessage(
-                    text="Extraheer alle tekst uit deze afbeelding. Geef de tekst precies weer zoals je het ziet, inclusief structuur en opmaak. Als er geen tekst is, beschrijf dan kort wat je ziet op de afbeelding (maximaal 3 zinnen).",
-                    file_contents=[file_content_obj]
-                )
-                
-                content = await chat.send_message(vision_message)
-                
-                if not content or len(content.strip()) < 10:
-                    content = f"[Afbeelding: {file.filename}]\n\nGeen tekst gedetecteerd in de afbeelding."
+                if response.status_code == 200:
+                    result = response.json()
+                    content = result['content'][0]['text']
+                    
+                    if not content or len(content.strip()) < 10:
+                        content = f"[Afbeelding: {file.filename}]\n\nGeen tekst gedetecteerd."
+                else:
+                    logging.error(f"Vision API error: {response.status_code} - {response.text}")
+                    content = f"[Afbeelding: {file.filename}]\n\nTekst extractie niet mogelijk."
                     
             except Exception as e:
                 logging.error(f"Error extracting text from image: {str(e)}")
-                content = f"[Afbeelding: {file.filename}]\n\nTekst extractie niet mogelijk. Error: {str(e)}"
+                content = f"[Afbeelding: {file.filename}]\n\nKon tekst niet extraheren."
             
             # Generate tags and references based on extracted content
             tags = await generate_tags_with_ai(doc_title, content)
@@ -288,7 +308,7 @@ async def upload_document(
             # Store image in GridFS
             import gridfs
             fs = gridfs.GridFS(sync_db)
-            file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type or 'image/jpeg')
+            file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type or media_type)
             
             doc = Document(
                 title=doc_title,

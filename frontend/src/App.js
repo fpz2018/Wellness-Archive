@@ -249,6 +249,7 @@ const KnowledgeBase = () => {
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [editMode, setEditMode] = useState(false);

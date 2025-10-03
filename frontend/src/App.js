@@ -585,45 +585,206 @@ const KnowledgeBase = () => {
         </Button>
       </div>
 
-      <div className="grid gap-4">
-        {documents.length === 0 ? (
-          <Card>
-            <CardContent className="py-10 text-center">
-              <p className="text-muted-foreground">Nog geen documenten. Begin met importeren!</p>
-            </CardContent>
-          </Card>
-        ) : (
-          documents.map((doc) => (
-            <Card key={doc.id} data-testid={`document-card-${doc.id}`}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl">{doc.title}</CardTitle>
-                    <CardDescription className="mt-1">
-                      {doc.category} • {new Date(doc.created_at).toLocaleDateString('nl-NL')}
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteDocument(doc.id)}
-                    data-testid={`delete-doc-${doc.id}`}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Document List */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">Documenten ({documents.length})</h3>
+          <ScrollArea className="h-[600px]">
+            <div className="space-y-3 pr-4">
+              {documents.length === 0 ? (
+                <Card>
+                  <CardContent className="py-10 text-center">
+                    <p className="text-muted-foreground">Nog geen documenten. Begin met importeren!</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                documents.map((doc) => (
+                  <Card 
+                    key={doc.id} 
+                    className={`cursor-pointer transition-all hover:shadow-md ${selectedDoc?.id === doc.id ? 'border-2 border-teal-500' : ''}`}
+                    onClick={() => handleViewDocument(doc.id)}
+                    data-testid={`document-card-${doc.id}`}
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-3">{doc.content}</p>
-                <div className="flex gap-2 mt-3 flex-wrap">
-                  {doc.tags.map((tag, idx) => (
-                    <Badge key={idx} variant="secondary" className="bg-teal-100 text-teal-800">{tag}</Badge>
-                  ))}
-                </div>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">{doc.title}</h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {doc.category} • {new Date(doc.created_at).toLocaleDateString('nl-NL')}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{doc.content}</p>
+                          <div className="flex gap-1 flex-wrap">
+                            {doc.tags.slice(0, 3).map((tag, idx) => (
+                              <Badge key={idx} variant="secondary" className="text-xs bg-teal-100 text-teal-800">{tag}</Badge>
+                            ))}
+                            {doc.tags.length > 3 && (
+                              <Badge variant="secondary" className="text-xs">+{doc.tags.length - 3}</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDocument(doc.id);
+                          }}
+                          data-testid={`delete-doc-${doc.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+
+        {/* Document Detail View */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-lg">Document Details</h3>
+            {selectedDoc && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditMode(!editMode)}
+                data-testid="toggle-edit-btn"
+              >
+                {editMode ? <X className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
+                {editMode ? 'Annuleren' : 'Bewerken'}
+              </Button>
+            )}
+          </div>
+
+          {!selectedDoc ? (
+            <Card>
+              <CardContent className="py-20 text-center">
+                <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-muted-foreground">Selecteer een document om details te bekijken</p>
               </CardContent>
             </Card>
-          ))
-        )}
+          ) : (
+            <Card>
+              <CardContent className="p-6">
+                <ScrollArea className="h-[560px] pr-4">
+                  {editMode ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Titel</label>
+                        <Input
+                          value={editForm.title}
+                          onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                          data-testid="edit-title-input"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Categorie</label>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          value={editForm.category}
+                          onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                          data-testid="edit-category-select"
+                        >
+                          {uniqueCategories.sort().map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Tags (gescheiden door komma's)</label>
+                        <Textarea
+                          value={editForm.tags}
+                          onChange={(e) => setEditForm({ ...editForm, tags: e.target.value })}
+                          rows={2}
+                          data-testid="edit-tags-input"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Referenties/Bronnen (één per regel)</label>
+                        <Textarea
+                          value={editForm.references}
+                          onChange={(e) => setEditForm({ ...editForm, references: e.target.value })}
+                          rows={4}
+                          placeholder="Voeg bronnen toe, één per regel..."
+                          data-testid="edit-references-input"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Inhoud</label>
+                        <Textarea
+                          value={editForm.content}
+                          onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                          rows={12}
+                          data-testid="edit-content-textarea"
+                        />
+                      </div>
+                      <Button onClick={handleUpdateDocument} className="w-full" data-testid="save-edit-btn">
+                        <Save className="h-4 w-4 mr-2" />
+                        Wijzigingen Opslaan
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">{selectedDoc.title}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                          <Badge>{selectedDoc.category}</Badge>
+                          <span>•</span>
+                          <span>{new Date(selectedDoc.created_at).toLocaleDateString('nl-NL')}</span>
+                          {selectedDoc.updated_at && (
+                            <>
+                              <span>•</span>
+                              <span>Bijgewerkt: {new Date(selectedDoc.updated_at).toLocaleDateString('nl-NL')}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {selectedDoc.tags && selectedDoc.tags.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">Tags</h4>
+                          <div className="flex gap-2 flex-wrap">
+                            {selectedDoc.tags.map((tag, idx) => (
+                              <Badge key={idx} variant="secondary" className="bg-teal-100 text-teal-800">{tag}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedDoc.references && selectedDoc.references.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold mb-2">Referenties & Bronnen</h4>
+                          <div className="bg-blue-50 p-3 rounded-lg space-y-1">
+                            {selectedDoc.references.map((ref, idx) => (
+                              <p key={idx} className="text-xs text-blue-900">• {ref}</p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <Separator />
+
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2">Inhoud</h4>
+                        <div className="prose prose-sm max-w-none">
+                          <pre className="whitespace-pre-wrap text-sm font-sans">{selectedDoc.content}</pre>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground">
+                        <p>Bestandstype: {selectedDoc.file_type}</p>
+                        {selectedDoc.file_size && <p>Grootte: {(selectedDoc.file_size / 1024).toFixed(2)} KB</p>}
+                      </div>
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

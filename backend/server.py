@@ -418,9 +418,16 @@ async def paste_document(
         if not content.strip():
             raise HTTPException(status_code=400, detail="Inhoud mag niet leeg zijn")
         
-        # Generate tags and extract references with AI
-        tags = await generate_tags_with_ai(title, content)
-        references = await extract_references_with_ai(content)
+        # Detect language and translate to Dutch if needed
+        translated_content, original_lang = await translate_to_dutch_if_needed(content, title)
+        was_translated = (original_lang == "en")
+        
+        if was_translated:
+            logging.info(f"Translated pasted content from English: {title}")
+        
+        # Generate tags and extract references with AI (using translated content)
+        tags = await generate_tags_with_ai(title, translated_content)
+        references = await extract_references_with_ai(translated_content)
         
         # Create document
         doc = Document(

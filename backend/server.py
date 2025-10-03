@@ -273,6 +273,11 @@ async def upload_document(
             
             doc_dict = doc.dict()
             doc_dict['original_file_id'] = str(file_id)
+            
+            # Remove MongoDB's _id if present (it's an ObjectId and can't be serialized)
+            if '_id' in doc_dict:
+                del doc_dict['_id']
+            
             await db.documents.insert_one(doc_dict)
             
             return {

@@ -111,45 +111,58 @@ async def translate_to_dutch_if_needed(content: str, title: str) -> tuple[str, s
         if len(content.strip()) < 50:
             return content, "nl"
         
+        # First detect language with a simpler prompt
         session_id = str(uuid.uuid4())
         chat = LlmChat(
             api_key=os.environ.get('EMERGENT_LLM_KEY'),
             session_id=session_id,
-            system_message="Je bent een taaldetectie en vertaal expert."
+            system_message="Je bent een taaldetectie expert. Antwoord alleen met de taalcode."
         ).with_model("anthropic", "claude-4-sonnet-20250514")
         
-        # First detect language
-        detect_prompt = f"""Analyseer deze tekst en bepaal de hoofdtaal. Antwoord ALLEEN met de taalcode: 'en' voor Engels, 'nl' voor Nederlands, of 'other' voor andere talen.
+        # Detect language - use shorter text sample
+        detect_prompt = f"""Wat is de taal van deze tekst? Antwoord ALLEEN met: 'en' (Engels) of 'nl' (Nederlands) of 'other' (anders).
 
-Titel: {title}
-Tekst: {content[:500]}...
+Titel: {title[:100]}
+Tekst: {content[:300]}
 
-Antwoord (alleen taalcode):"""
+Taalcode:"""
         
         user_message = UserMessage(text=detect_prompt)
         language = await chat.send_message(user_message)
         language = language.strip().lower()
         
+        logging.info(f"Detected language: {language} for document: {title}")
+        
         # If English, translate to Dutch
-        if language == 'en':
-            logging.info(f"English content detected, translating to Dutch: {title}")
+        if 'en' in language:
+            logging.info(f"Translating English content to Dutch: {title}")
             
-            translate_prompt = f"""Vertaal de volgende Engelse tekst naar vloeiend Nederlands. Behoud alle structuur, formattering en technische termen waar nodig.
+            # Create new session for translation
+            translate_session = str(uuid.uuid4())
+            translate_chat = LlmChat(
+                api_key=os.environ.get('EMERGENT_LLM_KEY'),
+                session_id=translate_session,
+                system_message="Je bent een professionele vertaler van Engels naar Nederlands. Vertaal de tekst precies en behoud alle formattering."
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            
+            translate_prompt = f"""Vertaal deze Engelse tekst naar Nederlands. Behoud alle structuur en formattering.
 
 {content}
 
-Geef ALLEEN de Nederlandse vertaling terug, zonder extra uitleg."""
+Nederlandse vertaling:"""
             
             translate_message = UserMessage(text=translate_prompt)
-            translated = await chat.send_message(translate_message)
+            translated = await translate_chat.send_message(translate_message)
             
-            return translated, "en"  # Return translated content and original language
+            logging.info(f"Successfully translated document: {title}")
+            return translated, "en"
         
-        return content, language  # Return original content and detected language
+        return content, language
         
     except Exception as e:
         logging.error(f"Error in translation: {str(e)}")
-        return content, "unknown"  # Return original on error
+        # Return original content if translation fails
+        return content, "unknown"
 
 # Helper function to extract text from files
 async def extract_text_from_file(file: UploadFile) -> str:

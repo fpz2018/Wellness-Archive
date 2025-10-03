@@ -44,6 +44,8 @@ class Document(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: Optional[str] = None
     file_size: Optional[int] = None
+    original_filename: Optional[str] = None
+    has_original_file: bool = False
 
 class DocumentCreate(BaseModel):
     title: str

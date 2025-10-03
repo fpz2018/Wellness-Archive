@@ -646,7 +646,7 @@ const KnowledgeBase = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".pdf,.docx,.txt"
+                    accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp"
                     onChange={(e) => setUploadFile(e.target.files[0])}
                     className="hidden"
                     data-testid="file-input"

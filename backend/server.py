@@ -366,11 +366,16 @@ async def paste_document(
             file_size=len(content)
         )
         
-        await db.documents.insert_one(doc.dict())
+        doc_dict = doc.dict()
+        # Remove MongoDB's _id if present
+        if '_id' in doc_dict:
+            del doc_dict['_id']
+        
+        await db.documents.insert_one(doc_dict)
         
         return {
             "message": "Document succesvol toegevoegd",
-            "document": doc.dict()
+            "document": doc_dict
         }
     except Exception as e:
         logging.error(f"Paste error: {str(e)}")

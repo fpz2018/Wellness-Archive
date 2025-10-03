@@ -243,7 +243,7 @@ async def upload_document(
         # Only store original for PDF files (to keep database size manageable)
         if file_type.lower() == 'pdf':
             import gridfs
-            fs = gridfs.GridFS(db._database)
+            fs = gridfs.GridFS(client[os.environ['DB_NAME']])
             file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type)
             has_original = True
         

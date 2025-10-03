@@ -340,6 +340,33 @@ async def search_documents(query: str):
     }).to_list(100)
     return [Document(**doc) for doc in documents]
 
+# Category routes
+@api_router.post("/categories", response_model=Category)
+async def create_category(cat: CategoryCreate):
+    """Create a new custom category"""
+    # Check if category already exists
+    existing = await db.categories.find_one({"name": cat.name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Category already exists")
+    
+    category = Category(**cat.dict())
+    await db.categories.insert_one(category.dict())
+    return category
+
+@api_router.get("/categories", response_model=List[Category])
+async def get_categories():
+    """Get all categories"""
+    categories = await db.categories.find().sort("name", 1).to_list(100)
+    return [Category(**cat) for cat in categories]
+
+@api_router.delete("/categories/{category_id}")
+async def delete_category(category_id: str):
+    """Delete a category"""
+    result = await db.categories.delete_one({"id": category_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category deleted successfully"}
+
 # Chat routes with Claude integration
 @api_router.post("/chat")
 async def chat(request: ChatRequest):

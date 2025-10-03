@@ -248,21 +248,38 @@ async def upload_document(
                     system_message="Je bent een expert in het lezen en transcriberen van tekst uit afbeeldingen. Extraheer alle tekst die je ziet."
                 ).with_model("anthropic", "claude-4-sonnet-20250514")
                 
-                # Create vision message
-                from emergentintegrations.llm.chat import ImageMessage
-                image_msg = ImageMessage(
-                    image_data=image_base64,
-                    text="Extraheer alle tekst uit deze afbeelding. Geef de tekst precies weer zoals je het ziet, inclusief structuur en opmaak. Als er geen tekst is, beschrijf dan wat je ziet op de afbeelding."
+                # Create vision message with FileContent
+                from emergentintegrations.llm.chat import FileContent
+                
+                # Determine content type
+                content_type_map = {
+                    'jpg': 'image/jpeg',
+                    'jpeg': 'image/jpeg',
+                    'png': 'image/png',
+                    'gif': 'image/gif',
+                    'bmp': 'image/bmp',
+                    'webp': 'image/webp'
+                }
+                content_type = content_type_map.get(file_type, 'image/jpeg')
+                
+                file_content_obj = FileContent(
+                    content_type=content_type,
+                    file_content_base64=image_base64
                 )
                 
-                content = await chat.send_message(image_msg)
+                vision_message = UserMessage(
+                    text="Extraheer alle tekst uit deze afbeelding. Geef de tekst precies weer zoals je het ziet, inclusief structuur en opmaak. Als er geen tekst is, beschrijf dan kort wat je ziet op de afbeelding (maximaal 3 zinnen).",
+                    file_contents=[file_content_obj]
+                )
+                
+                content = await chat.send_message(vision_message)
                 
                 if not content or len(content.strip()) < 10:
                     content = f"[Afbeelding: {file.filename}]\n\nGeen tekst gedetecteerd in de afbeelding."
                     
             except Exception as e:
                 logging.error(f"Error extracting text from image: {str(e)}")
-                content = f"[Afbeelding: {file.filename}]\n\nTekst extractie niet mogelijk."
+                content = f"[Afbeelding: {file.filename}]\n\nTekst extractie niet mogelijk. Error: {str(e)}"
             
             # Generate tags and references based on extracted content
             tags = await generate_tags_with_ai(doc_title, content)
@@ -290,7 +307,7 @@ async def upload_document(
             await db.documents.insert_one(doc_dict)
             
             return {
-                "message": "Afbeelding succesvol geüpload en tekst geëxtraheerd",
+                "message": "Afbeelding succesvol geüpload en tekst geëxtraheerd met AI",
                 "document": doc.dict()
             }
         

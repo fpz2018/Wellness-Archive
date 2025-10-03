@@ -484,6 +484,11 @@ const Dashboard = () => {
             <CardTitle className="text-3xl">{selectedDocument.title}</CardTitle>
             <CardDescription>
               {selectedDocument.category} • {new Date(selectedDocument.created_at).toLocaleDateString('nl-NL')}
+              {selectedDocument.was_translated && (
+                <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  🌐 Vertaald uit Engels
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

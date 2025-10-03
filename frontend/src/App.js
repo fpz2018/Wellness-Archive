@@ -1033,7 +1033,7 @@ const DocumentDetail = () => {
       </div>
 
       {/* Show original file if available */}
-      {document.has_original_file && document.file_type === 'pdf' && (
+      {document.has_original_file && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -1042,14 +1042,29 @@ const DocumentDetail = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-lg overflow-hidden" style={{ height: '600px' }}>
-              <iframe
-                src={`${API}/documents/${id}/file`}
-                className="w-full h-full"
-                title="Original Document"
-                data-testid="original-document-viewer"
-              />
-            </div>
+            {/* PDF Viewer */}
+            {document.file_type === 'pdf' && (
+              <div className="border rounded-lg overflow-hidden" style={{ height: '600px' }}>
+                <iframe
+                  src={`${API}/documents/${id}/file`}
+                  className="w-full h-full"
+                  title="Original Document"
+                  data-testid="original-document-viewer"
+                />
+              </div>
+            )}
+            
+            {/* Image Viewer */}
+            {['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(document.file_type) && (
+              <div className="border rounded-lg overflow-hidden bg-gray-50 p-4 flex justify-center">
+                <img
+                  src={`${API}/documents/${id}/file`}
+                  alt={document.title}
+                  className="max-w-full max-h-[600px] object-contain"
+                  data-testid="original-image-viewer"
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

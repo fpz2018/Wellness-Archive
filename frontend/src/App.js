@@ -1033,7 +1033,7 @@ const DocumentDetail = () => {
       </div>
 
       {/* Show original file if available */}
-      {document.has_original_file && (
+      {document.has_original_file ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -1067,6 +1067,18 @@ const DocumentDetail = () => {
             )}
           </CardContent>
         </Card>
+      ) : (
+        // Show message for old documents without original file
+        ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(document.file_type) && (
+          <Card className="bg-amber-50 border-amber-200">
+            <CardContent className="py-4">
+              <p className="text-sm text-amber-800">
+                ℹ️ Dit document werd geüpload voordat de viewer functie werd toegevoegd. 
+                Upload het bestand opnieuw om het origineel te kunnen bekijken.
+              </p>
+            </CardContent>
+          </Card>
+        )
       )}
 
       <Card>

@@ -329,7 +329,7 @@ const Dashboard = () => {
     return (
       <div className="space-y-6" data-testid="category-documents-view">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBackToCategories} data-testid="back-to-categories-btn">
+          <Button variant="outline" onClick={handleBackToMain} data-testid="back-to-categories-btn">
             ← Terug naar Dashboard
           </Button>
           <div>
@@ -370,7 +370,16 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground line-clamp-2">{doc.content}</p>
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {doc.tags.slice(0, 5).map((tag, idx) => (
-                      <Badge key={idx} variant="secondary" className="bg-teal-100 text-teal-800">
+                      <Badge 
+                        key={idx} 
+                        variant="secondary" 
+                        className="bg-teal-100 text-teal-800 cursor-pointer hover:bg-teal-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTagClick(tag);
+                        }}
+                        data-testid={`doc-tag-${tag}`}
+                      >
                         {tag}
                       </Badge>
                     ))}
@@ -387,13 +396,86 @@ const Dashboard = () => {
     );
   }
 
-  // View 3: Document Details
+  // View 3: Documents with Tag
+  if (selectedTag && !selectedDocument) {
+    return (
+      <div className="space-y-6" data-testid="tag-documents-view">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={handleBackToMain} data-testid="back-to-main-btn">
+            ← Terug naar Dashboard
+          </Button>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <Tag className="h-8 w-8 text-teal-600" />
+              {selectedTag}
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              {tagDocuments.length} {tagDocuments.length === 1 ? 'document' : 'documenten'} met deze tag
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          {tagDocuments.length === 0 ? (
+            <Card>
+              <CardContent className="py-10 text-center">
+                <p className="text-muted-foreground">Geen documenten met deze tag</p>
+              </CardContent>
+            </Card>
+          ) : (
+            tagDocuments.map((doc) => (
+              <Card 
+                key={doc.id} 
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => handleDocumentClick(doc)}
+                data-testid={`tag-doc-${doc.id}`}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-xl">{doc.title}</CardTitle>
+                      <CardDescription className="mt-1">
+                        {doc.category} • {new Date(doc.created_at).toLocaleDateString('nl-NL')}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline">{doc.file_type}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{doc.content}</p>
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {doc.tags.map((tag, idx) => (
+                      <Badge 
+                        key={idx} 
+                        variant="secondary" 
+                        className={`cursor-pointer hover:bg-teal-200 ${tag === selectedTag ? 'bg-teal-200 text-teal-900 border-2 border-teal-600' : 'bg-teal-100 text-teal-800'}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTagClick(tag);
+                        }}
+                        data-testid={`tag-badge-${tag}`}
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // View 4: Document Details
   if (selectedDocument) {
+    const backLabel = selectedTag ? selectedTag : selectedCategory;
     return (
       <div className="space-y-6" data-testid="document-detail-view">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBackToDocuments} data-testid="back-to-documents-btn">
-            ← Terug naar {selectedCategory}
+          <Button variant="outline" onClick={handleBackToList} data-testid="back-to-documents-btn">
+            ← Terug naar {backLabel}
           </Button>
         </div>
 
@@ -413,7 +495,13 @@ const Dashboard = () => {
               </h3>
               <div className="flex gap-2 flex-wrap">
                 {selectedDocument.tags.map((tag, idx) => (
-                  <Badge key={idx} variant="secondary" className="bg-teal-100 text-teal-800">
+                  <Badge 
+                    key={idx} 
+                    variant="secondary" 
+                    className="bg-teal-100 text-teal-800 cursor-pointer hover:bg-teal-200"
+                    onClick={() => handleTagClick(tag)}
+                    data-testid={`detail-tag-${tag}`}
+                  >
                     {tag}
                   </Badge>
                 ))}

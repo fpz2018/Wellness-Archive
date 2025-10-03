@@ -347,7 +347,7 @@ async def create_category(cat: CategoryCreate):
     # Check if category already exists
     existing = await db.categories.find_one({"name": cat.name})
     if existing:
-        raise HTTPException(status_code=400, detail="Category already exists")
+        raise HTTPException(status_code=400, detail="Categorie bestaat al")
     
     category = Category(**cat.dict())
     await db.categories.insert_one(category.dict())

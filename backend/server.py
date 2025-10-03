@@ -375,12 +375,14 @@ async def upload_document(
             title=doc_title,
             category=category,
             file_type=file_type,
-            content=content,
+            content=translated_content,
             tags=tags,
             references=references,
-            file_size=len(content),
+            file_size=len(translated_content),
             original_filename=file.filename if has_original else None,
-            has_original_file=has_original
+            has_original_file=has_original,
+            original_language=original_lang if was_translated else None,
+            was_translated=was_translated
         )
         
         doc_dict = doc.dict()

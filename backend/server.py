@@ -349,9 +349,16 @@ async def upload_document(
         # Use filename as title if not provided
         doc_title = title if title else file.filename.rsplit('.', 1)[0]
         
-        # Generate tags and extract references with AI
-        tags = await generate_tags_with_ai(doc_title, content)
-        references = await extract_references_with_ai(content)
+        # Detect language and translate to Dutch if needed
+        translated_content, original_lang = await translate_to_dutch_if_needed(content, doc_title)
+        was_translated = (original_lang == "en")
+        
+        if was_translated:
+            logging.info(f"Translated document from English: {doc_title}")
+        
+        # Generate tags and extract references with AI (using translated content)
+        tags = await generate_tags_with_ai(doc_title, translated_content)
+        references = await extract_references_with_ai(translated_content)
         
         # Store original file for PDFs
         file_id = None

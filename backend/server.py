@@ -375,15 +375,20 @@ async def paste_document(
         )
         
         doc_dict = doc.dict()
-        # Remove MongoDB's _id if present
-        if '_id' in doc_dict:
-            del doc_dict['_id']
         
-        await db.documents.insert_one(doc_dict)
+        # Insert into database
+        result = await db.documents.insert_one(doc_dict)
+        
+        # Fetch the inserted document to get clean data
+        inserted_doc = await db.documents.find_one({"id": doc.id})
+        
+        # Remove _id for JSON response
+        if inserted_doc and '_id' in inserted_doc:
+            del inserted_doc['_id']
         
         return {
             "message": "Document succesvol toegevoegd",
-            "document": doc_dict
+            "document": inserted_doc or doc_dict
         }
     except Exception as e:
         logging.error(f"Paste error: {str(e)}")

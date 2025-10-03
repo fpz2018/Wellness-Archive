@@ -276,6 +276,7 @@ const KnowledgeBase = () => {
   });
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDocuments();

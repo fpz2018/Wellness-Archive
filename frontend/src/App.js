@@ -692,7 +692,7 @@ const KnowledgeBase = () => {
     }
   };
 
-  const handleDeleteDocument = async () => {
+  const handleDeleteSelectedDocument = async () => {
     if (!selectedDoc) return;
     
     if (window.confirm(`Weet je zeker dat je "${selectedDoc.title}" wilt verwijderen?`)) {

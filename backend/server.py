@@ -216,7 +216,11 @@ async def upload_document(
 ):
     """Upload a file and extract text with auto-generated tags and references"""
     try:
+        # Read file content
+        file_content = await file.read()
+        
         # Extract text from file
+        await file.seek(0)  # Reset file pointer
         content = await extract_text_from_file(file)
         
         if not content.strip():
@@ -232,6 +236,17 @@ async def upload_document(
         # Determine file type
         file_type = file.filename.rsplit('.', 1)[1] if '.' in file.filename else 'unknown'
         
+        # Store original file in MongoDB GridFS for files
+        file_id = None
+        has_original = False
+        
+        # Only store original for PDF files (to keep database size manageable)
+        if file_type.lower() == 'pdf':
+            import gridfs
+            fs = gridfs.GridFS(db._database)
+            file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type)
+            has_original = True
+        
         # Create document
         doc = Document(
             title=doc_title,
@@ -240,10 +255,16 @@ async def upload_document(
             content=content,
             tags=tags,
             references=references,
-            file_size=len(content)
+            file_size=len(content),
+            original_filename=file.filename if has_original else None,
+            has_original_file=has_original
         )
         
-        await db.documents.insert_one(doc.dict())
+        doc_dict = doc.dict()
+        if file_id:
+            doc_dict['original_file_id'] = str(file_id)
+        
+        await db.documents.insert_one(doc_dict)
         
         return {
             "message": "Document succesvol geüpload",

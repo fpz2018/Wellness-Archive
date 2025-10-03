@@ -434,10 +434,12 @@ async def paste_document(
             title=title,
             category=category,
             file_type="text",
-            content=content,
+            content=translated_content,
             tags=tags,
             references=references,
-            file_size=len(content)
+            file_size=len(translated_content),
+            original_language=original_lang if was_translated else None,
+            was_translated=was_translated
         )
         
         doc_dict = doc.dict()

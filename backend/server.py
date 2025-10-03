@@ -46,6 +46,8 @@ class Document(BaseModel):
     file_size: Optional[int] = None
     original_filename: Optional[str] = None
     has_original_file: bool = False
+    original_filename: Optional[str] = None
+    has_original_file: bool = False
 
 class DocumentCreate(BaseModel):
     title: str

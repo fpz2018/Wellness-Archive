@@ -1112,15 +1112,28 @@ const KnowledgeBase = () => {
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-lg">Document Details</h3>
             {selectedDoc && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setEditMode(!editMode)}
-                data-testid="toggle-edit-btn"
-              >
-                {editMode ? <X className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
-                {editMode ? 'Annuleren' : 'Bewerken'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditMode(!editMode)}
+                  data-testid="toggle-edit-btn"
+                >
+                  {editMode ? <X className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
+                  {editMode ? 'Annuleren' : 'Bewerken'}
+                </Button>
+                {!editMode && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteDocument}
+                    data-testid="delete-doc-btn"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Verwijderen
+                  </Button>
+                )}
+              </div>
             )}
           </div>
 

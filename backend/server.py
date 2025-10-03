@@ -101,6 +101,54 @@ class SupplementAdviceRequest(BaseModel):
     condition: str
     patient_details: str
 
+# Helper function to detect language and translate if needed
+async def translate_to_dutch_if_needed(content: str, title: str) -> tuple[str, str]:
+    """Detect if content is in English and translate to Dutch if needed"""
+    try:
+        # Skip if content is too short
+        if len(content.strip()) < 50:
+            return content, "nl"
+        
+        session_id = str(uuid.uuid4())
+        chat = LlmChat(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            session_id=session_id,
+            system_message="Je bent een taaldetectie en vertaal expert."
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        
+        # First detect language
+        detect_prompt = f"""Analyseer deze tekst en bepaal de hoofdtaal. Antwoord ALLEEN met de taalcode: 'en' voor Engels, 'nl' voor Nederlands, of 'other' voor andere talen.
+
+Titel: {title}
+Tekst: {content[:500]}...
+
+Antwoord (alleen taalcode):"""
+        
+        user_message = UserMessage(text=detect_prompt)
+        language = await chat.send_message(user_message)
+        language = language.strip().lower()
+        
+        # If English, translate to Dutch
+        if language == 'en':
+            logging.info(f"English content detected, translating to Dutch: {title}")
+            
+            translate_prompt = f"""Vertaal de volgende Engelse tekst naar vloeiend Nederlands. Behoud alle structuur, formattering en technische termen waar nodig.
+
+{content}
+
+Geef ALLEEN de Nederlandse vertaling terug, zonder extra uitleg."""
+            
+            translate_message = UserMessage(text=translate_prompt)
+            translated = await chat.send_message(translate_message)
+            
+            return translated, "en"  # Return translated content and original language
+        
+        return content, language  # Return original content and detected language
+        
+    except Exception as e:
+        logging.error(f"Error in translation: {str(e)}")
+        return content, "unknown"  # Return original on error
+
 # Helper function to extract text from files
 async def extract_text_from_file(file: UploadFile) -> str:
     """Extract text from uploaded file"""

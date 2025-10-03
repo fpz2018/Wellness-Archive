@@ -325,7 +325,7 @@ async def upload_document(
         
         return {
             "message": "Document succesvol geüpload",
-            "document": doc.dict()
+            "document": doc_dict
         }
     except Exception as e:
         logging.error(f"Upload error: {str(e)}")

@@ -436,11 +436,18 @@ const KnowledgeBase = () => {
       {showImportModal && (
         <Card className="border-2 border-teal-500 shadow-lg" data-testid="import-modal">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-teal-600" />
-              Kennis Importeren (met AI Tag Generatie)
-            </CardTitle>
-            <CardDescription>Upload een bestand of plak tekst - AI genereert automatisch relevante tags</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-teal-600" />
+                  Kennis Importeren (met AI Tag & Referentie Detectie)
+                </CardTitle>
+                <CardDescription>Upload een bestand of plak tekst - AI genereert automatisch relevante tags en detecteert referenties</CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setShowImportModal(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <Tabs value={importType} onValueChange={setImportType}>
@@ -469,13 +476,9 @@ const KnowledgeBase = () => {
                   onChange={(e) => setPasteForm({ ...pasteForm, category: e.target.value })}
                   data-testid="paste-category-select"
                 >
-                  <option value="artikel">Artikel</option>
-                  <option value="onderzoek">Onderzoek</option>
-                  <option value="boek">Boek</option>
-                  <option value="dictaat">Dictaat</option>
-                  <option value="aantekening">Aantekening</option>
-                  <option value="supplement">Supplement Info</option>
-                  <option value="kruiden">Kruiden Info</option>
+                  {uniqueCategories.sort().map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
                 <Textarea
                   placeholder="Plak hier de tekst van je document..."
@@ -491,7 +494,7 @@ const KnowledgeBase = () => {
                     className="bg-teal-600 hover:bg-teal-700"
                     data-testid="paste-submit-btn"
                   >
-                    {uploading ? "Verwerken..." : "Opslaan met AI Tags"}
+                    {uploading ? "Verwerken..." : "Opslaan met AI Tags & Referenties"}
                   </Button>
                   <Button variant="outline" onClick={() => setShowImportModal(false)} data-testid="cancel-import-btn">
                     Annuleren
@@ -513,16 +516,11 @@ const KnowledgeBase = () => {
                   onChange={(e) => setUploadForm({ ...uploadForm, category: e.target.value })}
                   data-testid="upload-category-select"
                 >
-                  <option value="artikel">Artikel</option>
-                  <option value="onderzoek">Onderzoek</option>
-                  <option value="boek">Boek</option>
-                  <option value="dictaat">Dictaat</option>
-                  <option value="aantekening">Aantekening</option>
-                  <option value="supplement">Supplement Info</option>
-                  <option value="kruiden">Kruiden Info</option>
+                  {uniqueCategories.sort().map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
 
-                {/* Drag and Drop Zone */}
                 <div
                   className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-teal-500 transition-colors"
                   onDrop={handleFileDrop}
@@ -562,7 +560,7 @@ const KnowledgeBase = () => {
                     className="bg-teal-600 hover:bg-teal-700"
                     data-testid="upload-submit-btn"
                   >
-                    {uploading ? "Uploaden..." : "Upload met AI Tags"}
+                    {uploading ? "Uploaden..." : "Upload met AI Tags & Referenties"}
                   </Button>
                   <Button variant="outline" onClick={() => setShowImportModal(false)}>
                     Annuleren

@@ -231,84 +231,33 @@ async def upload_document(
         is_image = file_type in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
         is_pdf = file_type == 'pdf'
         
-        # For images, extract text using AI vision
+        # For images, store the image (vision/OCR can be added later)
         if is_image:
             doc_title = title if title else file.filename.rsplit('.', 1)[0]
             
-            # Convert image to base64 for Claude vision
-            import base64
-            image_base64 = base64.b64encode(file_content).decode('utf-8')
+            # Simple content for now - just indicate it's an image
+            content = f"[Afbeelding: {file.filename}]\n\nDit is een afbeelding. Bekijk het origineel in de document viewer."
             
-            # Use Claude to extract text from image
-            try:
-                session_id = str(uuid.uuid4())
-                
-                # Determine media type
-                media_type_map = {
-                    'jpg': 'image/jpeg',
-                    'jpeg': 'image/jpeg',
-                    'png': 'image/png',
-                    'gif': 'image/gif',
-                    'webp': 'image/webp'
-                }
-                media_type = media_type_map.get(file_type, 'image/jpeg')
-                
-                # Use direct Anthropic API call for vision
-                import requests
-                api_key = os.environ.get('EMERGENT_LLM_KEY')
-                
-                response = requests.post(
-                    'https://api.emergentagi.com/anthropic/messages',
-                    headers={
-                        'x-api-key': api_key,
-                        'anthropic-version': '2023-06-01',
-                        'content-type': 'application/json'
-                    },
-                    json={
-                        'model': 'claude-4-sonnet-20250514',
-                        'max_tokens': 4096,
-                        'messages': [{
-                            'role': 'user',
-                            'content': [
-                                {
-                                    'type': 'image',
-                                    'source': {
-                                        'type': 'base64',
-                                        'media_type': media_type,
-                                        'data': image_base64
-                                    }
-                                },
-                                {
-                                    'type': 'text',
-                                    'text': 'Extraheer alle tekst uit deze afbeelding. Geef de tekst precies weer zoals je het ziet, inclusief structuur en opmaak. Als er geen tekst is, beschrijf dan kort wat je ziet op de afbeelding (maximaal 3 zinnen).'
-                                }
-                            ]
-                        }]
-                    }
-                )
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    content = result['content'][0]['text']
-                    
-                    if not content or len(content.strip()) < 10:
-                        content = f"[Afbeelding: {file.filename}]\n\nGeen tekst gedetecteerd."
-                else:
-                    logging.error(f"Vision API error: {response.status_code} - {response.text}")
-                    content = f"[Afbeelding: {file.filename}]\n\nTekst extractie niet mogelijk."
-                    
-            except Exception as e:
-                logging.error(f"Error extracting text from image: {str(e)}")
-                content = f"[Afbeelding: {file.filename}]\n\nKon tekst niet extraheren."
-            
-            # Generate tags and references based on extracted content
-            tags = await generate_tags_with_ai(doc_title, content)
-            references = await extract_references_with_ai(content)
+            # Generate tags based on title/filename
+            tags = await generate_tags_with_ai(doc_title, f"Dit is een afbeelding met de naam: {doc_title}")
+            references = []
             
             # Store image in GridFS
             import gridfs
             fs = gridfs.GridFS(sync_db)
-            file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type or media_type)
+            
+            # Determine media type
+            media_type_map = {
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'png': 'image/png',
+                'gif': 'image/gif',
+                'webp': 'image/webp',
+                'bmp': 'image/bmp'
+            }
+            media_type = media_type_map.get(file_type, 'image/jpeg')
+            
+            file_id = fs.put(file_content, filename=file.filename, content_type=media_type)
             
             doc = Document(
                 title=doc_title,
@@ -327,7 +276,7 @@ async def upload_document(
             await db.documents.insert_one(doc_dict)
             
             return {
-                "message": "Afbeelding succesvol geüpload en tekst geëxtraheerd met AI",
+                "message": "Afbeelding succesvol geüpload",
                 "document": doc.dict()
             }
         

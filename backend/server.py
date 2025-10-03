@@ -302,7 +302,7 @@ async def get_document(document_id: str):
         raise HTTPException(status_code=404, detail="Document not found")
     return Document(**doc)
 
-@api_router.put("/documents/{document_id}", response_model=Document)
+@api_router.put("/documents/{document_id}")
 async def update_document(document_id: str, update: DocumentUpdate):
     """Update a document"""
     doc = await db.documents.find_one({"id": document_id})
@@ -310,15 +310,15 @@ async def update_document(document_id: str, update: DocumentUpdate):
         raise HTTPException(status_code=404, detail="Document not found")
     
     update_data = update.dict(exclude_unset=True)
-    if update_data:
-        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-        await db.documents.update_one(
-            {"id": document_id},
-            {"$set": update_data}
-        )
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.documents.update_one(
+        {"id": document_id},
+        {"$set": update_data}
+    )
     
     updated_doc = await db.documents.find_one({"id": document_id})
-    return Document(**updated_doc)
+    return {"message": "Document bijgewerkt", "document": Document(**updated_doc).dict()}
 
 @api_router.delete("/documents/{document_id}")
 async def delete_document(document_id: str):

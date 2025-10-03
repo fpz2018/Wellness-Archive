@@ -547,19 +547,6 @@ const KnowledgeBase = () => {
         </Card>
       )}
 
-  return (
-    <div className="space-y-6" data-testid="knowledge-base">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Kennisbank</h2>
-          <p className="text-muted-foreground mt-2">Beheer al je artikelen, onderzoeken en aantekeningen</p>
-        </div>
-        <Button onClick={() => setShowImportModal(true)} className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700" data-testid="import-document-btn">
-          <Upload className="h-4 w-4 mr-2" />
-          Kennis Importeren
-        </Button>
-      </div>
-
       {/* Import Modal */}
       {showImportModal && (
         <Card className="border-2 border-teal-500 shadow-lg" data-testid="import-modal">

@@ -327,6 +327,35 @@ async def get_document(document_id: str):
         raise HTTPException(status_code=404, detail="Document not found")
     return Document(**doc)
 
+@api_router.get("/documents/{document_id}/file")
+async def get_original_file(document_id: str):
+    """Get the original uploaded file"""
+    doc = await db.documents.find_one({"id": document_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    if not doc.get('has_original_file') or not doc.get('original_file_id'):
+        raise HTTPException(status_code=404, detail="Origineel bestand niet beschikbaar")
+    
+    try:
+        import gridfs
+        from bson import ObjectId
+        
+        fs = gridfs.GridFS(db._database)
+        file_id = ObjectId(doc['original_file_id'])
+        grid_out = fs.get(file_id)
+        
+        return StreamingResponse(
+            io.BytesIO(grid_out.read()),
+            media_type='application/pdf',
+            headers={
+                "Content-Disposition": f"inline; filename={doc.get('original_filename', 'document.pdf')}"
+            }
+        )
+    except Exception as e:
+        logging.error(f"Error retrieving file: {str(e)}")
+        raise HTTPException(status_code=500, detail="Fout bij ophalen bestand")
+
 @api_router.put("/documents/{document_id}")
 async def update_document(document_id: str, update: DocumentUpdate):
     """Update a document"""

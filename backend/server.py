@@ -388,11 +388,25 @@ async def get_original_file(document_id: str):
         file_id = ObjectId(doc['original_file_id'])
         grid_out = fs.get(file_id)
         
+        # Determine media type based on file extension
+        file_type = doc.get('file_type', '').lower()
+        media_types = {
+            'pdf': 'application/pdf',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'bmp': 'image/bmp',
+            'webp': 'image/webp'
+        }
+        
+        media_type = media_types.get(file_type, 'application/octet-stream')
+        
         return StreamingResponse(
             io.BytesIO(grid_out.read()),
-            media_type='application/pdf',
+            media_type=media_type,
             headers={
-                "Content-Disposition": f"inline; filename={doc.get('original_filename', 'document.pdf')}"
+                "Content-Disposition": f"inline; filename={doc.get('original_filename', 'document')}"
             }
         )
     except Exception as e:

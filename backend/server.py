@@ -72,6 +72,71 @@ class SupplementAdviceRequest(BaseModel):
     condition: str
     patient_details: str
 
+# Helper function to extract text from files
+async def extract_text_from_file(file: UploadFile) -> str:
+    """Extract text from uploaded file"""
+    content = await file.read()
+    
+    if file.filename.endswith('.pdf'):
+        # Extract from PDF
+        pdf_file = io.BytesIO(content)
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text() + "\n"
+        return text
+    
+    elif file.filename.endswith('.docx'):
+        # Extract from DOCX
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp_file:
+            tmp_file.write(content)
+            tmp_file.flush()
+            doc = DocxDocument(tmp_file.name)
+            text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+            os.unlink(tmp_file.name)
+        return text
+    
+    elif file.filename.endswith('.txt'):
+        # Extract from TXT
+        return content.decode('utf-8')
+    
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+# Helper function to generate tags with AI
+async def generate_tags_with_ai(title: str, content: str) -> List[str]:
+    """Generate relevant tags using Claude AI"""
+    try:
+        session_id = str(uuid.uuid4())
+        chat = LlmChat(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            session_id=session_id,
+            system_message="Je bent een expert in het taggen van medische en orthomoleculaire documenten. Genereer 3-7 relevante tags in het Nederlands voor het document."
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        
+        prompt = f"""Genereer relevante tags voor dit document:
+
+Titel: {title}
+Inhoud: {content[:1000]}...
+
+Geef alleen de tags terug, gescheiden door komma's. Gebruik maximaal 7 tags. Focus op:
+- Hoofdonderwerpen
+- Supplementen/kruiden die genoemd worden
+- Aandoeningen/symptomen
+- Therapeutische categorieën
+
+Antwoord alleen met de tags, niets anders."""
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse tags from response
+        tags = [tag.strip() for tag in response.split(',')]
+        return tags[:7]  # Max 7 tags
+    except Exception as e:
+        logging.error(f"Error generating tags: {str(e)}")
+        return ["orthomoleculair", "kennis"]  # Default tags
+
 # Document routes
 @api_router.post("/documents", response_model=Document)
 async def create_document(doc: DocumentCreate):
@@ -80,6 +145,83 @@ async def create_document(doc: DocumentCreate):
     doc_obj = Document(**doc_dict)
     await db.documents.insert_one(doc_obj.dict())
     return doc_obj
+
+@api_router.post("/documents/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    title: Optional[str] = Form(None),
+    category: str = Form("artikel")
+):
+    """Upload a file and extract text with auto-generated tags"""
+    try:
+        # Extract text from file
+        content = await extract_text_from_file(file)
+        
+        if not content.strip():
+            raise HTTPException(status_code=400, detail="Geen tekst gevonden in bestand")
+        
+        # Use filename as title if not provided
+        doc_title = title if title else file.filename.rsplit('.', 1)[0]
+        
+        # Generate tags with AI
+        tags = await generate_tags_with_ai(doc_title, content)
+        
+        # Determine file type
+        file_type = file.filename.rsplit('.', 1)[1] if '.' in file.filename else 'unknown'
+        
+        # Create document
+        doc = Document(
+            title=doc_title,
+            category=category,
+            file_type=file_type,
+            content=content,
+            tags=tags,
+            file_size=len(content)
+        )
+        
+        await db.documents.insert_one(doc.dict())
+        
+        return {
+            "message": "Document succesvol geüpload",
+            "document": doc.dict()
+        }
+    except Exception as e:
+        logging.error(f"Upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/documents/paste")
+async def paste_document(
+    title: str = Form(...),
+    content: str = Form(...),
+    category: str = Form("aantekening")
+):
+    """Create document from pasted text with auto-generated tags"""
+    try:
+        if not content.strip():
+            raise HTTPException(status_code=400, detail="Inhoud mag niet leeg zijn")
+        
+        # Generate tags with AI
+        tags = await generate_tags_with_ai(title, content)
+        
+        # Create document
+        doc = Document(
+            title=title,
+            category=category,
+            file_type="text",
+            content=content,
+            tags=tags,
+            file_size=len(content)
+        )
+        
+        await db.documents.insert_one(doc.dict())
+        
+        return {
+            "message": "Document succesvol toegevoegd",
+            "document": doc.dict()
+        }
+    except Exception as e:
+        logging.error(f"Paste error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/documents", response_model=List[Document])
 async def get_documents(category: Optional[str] = None):

@@ -274,15 +274,19 @@ async def upload_document(
             doc_dict = doc.dict()
             doc_dict['original_file_id'] = str(file_id)
             
-            # Remove MongoDB's _id if present (it's an ObjectId and can't be serialized)
-            if '_id' in doc_dict:
-                del doc_dict['_id']
+            # Insert into database
+            result = await db.documents.insert_one(doc_dict)
             
-            await db.documents.insert_one(doc_dict)
+            # Fetch the inserted document to get clean data
+            inserted_doc = await db.documents.find_one({"id": doc.id})
+            
+            # Remove _id for JSON response
+            if inserted_doc and '_id' in inserted_doc:
+                del inserted_doc['_id']
             
             return {
                 "message": "Afbeelding succesvol geüpload",
-                "document": doc_dict
+                "document": inserted_doc or doc_dict
             }
         
         # For PDFs and text files, extract text

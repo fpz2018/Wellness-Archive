@@ -107,15 +107,18 @@ user_problem_statement: "Implementatie van blog article feature met SEO optimali
 backend:
   - task: "Blog Article Creation API Endpoint"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented /api/blog/create endpoint with Claude Sonnet 4 integration, local SEO keywords, and comprehensive prompt engineering for Dutch blog generation. Ready for testing."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE: Blog creation API consistently fails with 502 Bad Gateway errors from Emergent LLM API (claude-4-sonnet-20250514). Fixed LlmChat initialization issue (was using model_name parameter instead of .with_model() method). Added retry logic with asyncio.sleep(2). API endpoint structure is correct, request validation works, but Claude API calls timeout after 60+ seconds with litellm.APIError: APIError: OpenAIException - Error code: 502. This appears to be a temporary service issue with the LLM provider, not a code issue. All other endpoints (documents, categories) work correctly."
         
   - task: "SEO Meta Data Generation"
     implemented: false

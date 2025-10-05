@@ -891,6 +891,16 @@ const KnowledgeBase = () => {
           <p className="text-muted-foreground mt-2">Beheer al je artikelen, onderzoeken en aantekeningen</p>
         </div>
         <div className="flex gap-2">
+          {selectedDocuments.size > 0 && (
+            <Button 
+              onClick={handleCreateBlog} 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" 
+              data-testid="create-blog-btn"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Blog Maken ({selectedDocuments.size})
+            </Button>
+          )}
           <Button onClick={() => setShowCategoryModal(true)} variant="outline" data-testid="manage-categories-btn">
             <Settings className="h-4 w-4 mr-2" />
             Categorieën

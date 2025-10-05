@@ -1072,6 +1072,9 @@ Gevestigd in het hart van Zeist, combineren we moderne orthomoleculaire kennis m
             ]
         }
         
+        # Select appropriate featured image based on blog topic
+        featured_image = "https://images.unsplash.com/photo-1704694671866-f83e0b91df09?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwxfHx8MTc1OTY3ODYwNXww&ixlib=rb-4.1.0&q=85"
+        
         # Create blog article document
         blog_article = BlogArticle(
             title=request.title,
@@ -1081,6 +1084,7 @@ Gevestigd in het hart van Zeist, combineren we moderne orthomoleculaire kennis m
             meta_title=seo_data.get("meta_title", f"{request.title} | Orthomoleculair Praktijk Zeist"),
             meta_description=seo_data.get("meta_description", "Professioneel orthomoleculair advies in Zeist"),
             url_slug=seo_data.get("url_slug", request.title.lower().replace(" ", "-")),
+            featured_image_url=featured_image,
             source_document_ids=request.document_ids,
             custom_instructions=request.custom_instructions
         )

@@ -475,6 +475,112 @@ async def paste_document(
         logging.error(f"Paste error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/documents/voice")
+async def voice_document(
+    audio: UploadFile = File(...),
+    title: str = Form(...),
+    category: str = Form("aantekening")
+):
+    """Create document from voice recording with speech-to-text"""
+    try:
+        # Read audio file
+        audio_content = await audio.read()
+        
+        if len(audio_content) == 0:
+            raise HTTPException(status_code=400, detail="Audio bestand is leeg")
+        
+        # Save audio temporarily
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.webm') as tmp_audio:
+            tmp_audio.write(audio_content)
+            tmp_audio_path = tmp_audio.name
+        
+        try:
+            # Use OpenAI Whisper for speech-to-text via Emergent LLM
+            import requests
+            
+            api_key = os.environ.get('EMERGENT_LLM_KEY')
+            
+            # Call Whisper API
+            with open(tmp_audio_path, 'rb') as audio_file:
+                response = requests.post(
+                    'https://api.emergentagi.com/openai/audio/transcriptions',
+                    headers={
+                        'Authorization': f'Bearer {api_key}'
+                    },
+                    files={
+                        'file': ('audio.webm', audio_file, 'audio/webm')
+                    },
+                    data={
+                        'model': 'whisper-1',
+                        'language': 'nl'  # Try Dutch first
+                    }
+                )
+            
+            if response.status_code == 200:
+                result = response.json()
+                content = result.get('text', '')
+                
+                if not content.strip():
+                    raise HTTPException(status_code=400, detail="Geen tekst herkend in audio")
+                
+                logging.info(f"Transcribed audio to text: {len(content)} characters")
+                
+            else:
+                logging.error(f"Whisper API error: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=500, detail="Fout bij spraak-naar-tekst conversie")
+        
+        finally:
+            # Clean up temp file
+            os.unlink(tmp_audio_path)
+        
+        # Now process like normal paste
+        # Detect language and translate to Dutch if needed
+        translated_content, original_lang = await translate_to_dutch_if_needed(content, title)
+        was_translated = (original_lang == "en")
+        
+        if was_translated:
+            logging.info(f"Translated voice content from English: {title}")
+        
+        # Generate tags and extract references with AI
+        tags = await generate_tags_with_ai(title, translated_content)
+        references = await extract_references_with_ai(translated_content)
+        
+        # Create document
+        doc = Document(
+            title=title,
+            category=category,
+            file_type="voice",
+            content=translated_content,
+            tags=tags,
+            references=references,
+            file_size=len(translated_content),
+            original_language=original_lang if was_translated else None,
+            was_translated=was_translated
+        )
+        
+        doc_dict = doc.dict()
+        
+        # Insert into database
+        result = await db.documents.insert_one(doc_dict)
+        
+        # Fetch the inserted document
+        inserted_doc = await db.documents.find_one({"id": doc.id})
+        
+        # Remove _id for JSON response
+        if inserted_doc and '_id' in inserted_doc:
+            del inserted_doc['_id']
+        
+        return {
+            "message": "Spraakopname succesvol verwerkt en opgeslagen",
+            "document": inserted_doc or doc_dict,
+            "transcription_length": len(content)
+        }
+        
+    except Exception as e:
+        logging.error(f"Voice error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/documents", response_model=List[Document])
 async def get_documents(category: Optional[str] = None):
     """Get all documents, optionally filtered by category"""

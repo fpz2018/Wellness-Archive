@@ -131,16 +131,16 @@ backend:
 
 frontend:
   - task: "Multi-select Document Interface"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: "NA"
+      - working: true
         agent: "main"
-        comment: "Adding checkboxes for document selection in KnowledgeBase component"
+        comment: "Successfully implemented multi-select checkboxes, 'Alles Selecteren', 'Selectie Wissen', and 'Blog Maken (X)' buttons. UI working perfectly with visual feedback."
         
   - task: "Blog Creation Dialog/Interface"
     implemented: false

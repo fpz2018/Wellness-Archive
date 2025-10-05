@@ -18,6 +18,7 @@ import json
 import PyPDF2
 from docx import Document as DocxDocument
 import tempfile
+import asyncio
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')

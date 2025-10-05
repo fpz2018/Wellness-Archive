@@ -183,7 +183,9 @@ test_plan:
     - "Blog Article Creation API Endpoint"
     - "Multi-select Document Interface"
     - "Blog Creation Dialog/Interface"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Blog Article Creation API Endpoint"
+    - "SEO Meta Data Generation"
   test_all: false
   test_priority: "high_first"
 

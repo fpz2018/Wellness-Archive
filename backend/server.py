@@ -82,6 +82,30 @@ class CategoryCreate(BaseModel):
     name: str
     description: Optional[str] = None
 
+class BlogCreateRequest(BaseModel):
+    document_ids: List[str]
+    title: str
+    category: str = "Blog Articles"
+    custom_instructions: Optional[str] = None
+
+class BlogArticle(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    content: str
+    tags: List[str] = []
+    category: str = "Blog Articles"
+    meta_title: str
+    meta_description: str
+    url_slug: str
+    source_document_ids: List[str]
+    custom_instructions: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    file_type: str = "blog_article"
+    references: List[str] = []
+    has_original_file: bool = False
+    original_language: str = "nl"
+    was_translated: bool = False
+
 class ChatMessage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     session_id: str

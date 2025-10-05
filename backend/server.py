@@ -98,6 +98,7 @@ class BlogArticle(BaseModel):
     meta_title: str
     meta_description: str
     url_slug: str
+    featured_image_url: Optional[str] = None
     source_document_ids: List[str]
     custom_instructions: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

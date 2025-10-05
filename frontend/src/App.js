@@ -1214,7 +1214,29 @@ const KnowledgeBase = () => {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Document List */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Documenten ({documents.length})</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-lg">Documenten ({documents.length})</h3>
+            {documents.length > 0 && (
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedDocuments(new Set(documents.map(doc => doc.id)))}
+                  data-testid="select-all-btn"
+                >
+                  Alles Selecteren
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedDocuments(new Set())}
+                  data-testid="clear-selection-btn"
+                >
+                  Selectie Wissen
+                </Button>
+              </div>
+            )}
+          </div>
           <ScrollArea className="h-[600px]">
             <div className="space-y-3 pr-4">
               {documents.length === 0 ? (

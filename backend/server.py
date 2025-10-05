@@ -899,6 +899,143 @@ Geef advies over:
         logging.error(f"Supplement advice error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Blog Article Creation
+@api_router.post("/blog/create")
+async def create_blog_article(request: BlogCreateRequest):
+    """Create a blog article from selected documents with SEO optimization"""
+    try:
+        # Fetch source documents
+        source_documents = []
+        for doc_id in request.document_ids:
+            doc = await db.documents.find_one({"id": doc_id})
+            if not doc:
+                raise HTTPException(status_code=404, detail=f"Document {doc_id} not found")
+            source_documents.append(doc)
+        
+        if not source_documents:
+            raise HTTPException(status_code=400, detail="No source documents provided")
+        
+        # Prepare content for AI processing
+        combined_content = "\n\n".join([
+            f"**{doc['title']}**\n{doc['content']}" 
+            for doc in source_documents
+        ])
+        
+        # Local SEO keywords
+        local_keywords = ["fysio zeist", "Fysiopraktijk Zeist", "Orthomoleculair Praktijk Zeist"]
+        
+        # Create detailed prompt for blog generation
+        blog_prompt = f"""Creëer een uitgebreid, SEO-geoptimaliseerd blog artikel in het Nederlands gebaseerd op de volgende bronmaterialen.
+
+BRONMATERIALEN:
+{combined_content}
+
+INSTRUCTIES:
+1. STRUCTUUR: Gebruik dezelfde structuur als professionele orthomoleculaire gidsen:
+   - Uitgebreide inleiding met kernboodschap (2-3 alinea's)
+   - Duidelijke hoofdstukken met ### headers
+   - Praktische stappen (Stap 1, 2, 3, etc.)
+   - Bullet points voor concrete tips
+   - FAQ sectie aan het einde
+   - Disclaimer
+
+2. SEO OPTIMALISATIE:
+   - Integreer natuurlijk deze lokale keywords: {', '.join(local_keywords)}
+   - Gebruik het hoofdonderwerp als primair keyword
+   - Maak gebruik van semantisch gerelateerde termen
+   - Optimaliseer voor featured snippets (gebruik vraag-antwoord structuur)
+
+3. TONE & STIJL:
+   - Professioneel maar toegankelijk
+   - Nederlandse taal
+   - Wetenschappelijk onderbouwd maar praktisch
+   - Gebruik "je" vorm voor directe aanspreking
+
+4. INHOUD EISEN:
+   - Minimaal 1500 woorden
+   - Gebruik concrete voorbeelden
+   - Voeg praktische tips toe
+   - Maak interne link suggesties naar gerelateerde onderwerpen
+
+TITEL: {request.title}
+
+AANGEPASTE INSTRUCTIES:
+{request.custom_instructions if request.custom_instructions else 'Geen aanvullende instructies.'}
+
+Genereer een volledig blog artikel dat klaar is voor publicatie."""
+
+        # Initialize LLM
+        chat = LlmChat(
+            model_name="claude-3-5-sonnet-20241022",
+            api_key=os.environ.get("EMERGENT_LLM_KEY", "sk-emergent-dBdA30c5f95Be66Ac2")
+        )
+        
+        user_message = UserMessage(text=blog_prompt)
+        response = await chat.send_message(user_message)
+        
+        blog_content = response
+        
+        # Generate SEO metadata
+        seo_prompt = f"""Gebaseerd op dit blog artikel, genereer SEO metadata in JSON formaat:
+
+ARTIKEL TITEL: {request.title}
+ARTIKEL INHOUD (eerste 200 woorden): {blog_content[:200]}...
+
+Genereer JSON met:
+1. meta_title (50-60 karakters, inclusief lokaal keyword)
+2. meta_description (150-160 karakters, aantrekkelijk en informatief)
+3. url_slug (SEO-vriendelijk, met streepjes)
+4. primary_keywords (array van 3-5 keywords)
+5. suggested_tags (array van 8-10 tags voor dit artikel)
+
+Lokale keywords om te integreren: fysio zeist, Fysiopraktijk Zeist, Orthomoleculair Praktijk Zeist
+
+Respond alleen met geldige JSON."""
+
+        seo_message = UserMessage(text=seo_prompt)
+        seo_response = await chat.send_message(seo_message)
+        
+        try:
+            # Parse SEO data
+            seo_data = json.loads(seo_response)
+        except json.JSONDecodeError:
+            # Fallback SEO data
+            seo_data = {
+                "meta_title": f"{request.title} | Orthomoleculair Praktijk Zeist",
+                "meta_description": f"Ontdek professioneel advies over {request.title.lower()} bij Orthomoleculair Praktijk Zeist. Wetenschappelijk onderbouwde informatie en praktische tips.",
+                "url_slug": request.title.lower().replace(" ", "-").replace(",", "").replace(".", ""),
+                "primary_keywords": [request.title.lower()],
+                "suggested_tags": ["orthomoleculair", "gezondheid", "zeist", "natuurlijke behandeling"]
+            }
+        
+        # Create blog article document
+        blog_article = BlogArticle(
+            title=request.title,
+            content=blog_content,
+            tags=seo_data.get("suggested_tags", []),
+            category=request.category,
+            meta_title=seo_data.get("meta_title", f"{request.title} | Orthomoleculair Praktijk Zeist"),
+            meta_description=seo_data.get("meta_description", "Professioneel orthomoleculair advies in Zeist"),
+            url_slug=seo_data.get("url_slug", request.title.lower().replace(" ", "-")),
+            source_document_ids=request.document_ids,
+            custom_instructions=request.custom_instructions
+        )
+        
+        # Save to database
+        blog_dict = blog_article.dict()
+        result = await db.documents.insert_one(blog_dict)
+        
+        return {
+            "success": True,
+            "blog_id": blog_article.id,
+            "blog_article": blog_article,
+            "seo_data": seo_data
+        }
+        
+    except Exception as e:
+        logging.error(f"Blog creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Blog creation failed: {str(e)}")
+
 # Statistics
 @api_router.get("/stats")
 async def get_stats():

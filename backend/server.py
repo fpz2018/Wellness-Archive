@@ -965,10 +965,12 @@ AANGEPASTE INSTRUCTIES:
 Genereer een volledig blog artikel dat klaar is voor publicatie."""
 
         # Initialize LLM
+        session_id = str(uuid.uuid4())
         chat = LlmChat(
-            model_name="claude-3-5-sonnet-20241022",
-            api_key=os.environ.get("EMERGENT_LLM_KEY", "sk-emergent-dBdA30c5f95Be66Ac2")
-        )
+            api_key=os.environ.get("EMERGENT_LLM_KEY", "sk-emergent-dBdA30c5f95Be66Ac2"),
+            session_id=session_id,
+            system_message="Je bent een expert content creator gespecialiseerd in orthomoleculaire geneeskunde en SEO-geoptimaliseerde blog artikelen."
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         user_message = UserMessage(text=blog_prompt)
         response = await chat.send_message(user_message)

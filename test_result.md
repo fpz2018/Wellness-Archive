@@ -190,3 +190,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Successfully implemented frontend multi-select and blog creation UI. All frontend components working perfectly. Backend API endpoint implemented and ready for testing. Need to test the /api/blog/create endpoint with actual blog generation."
+  - agent: "testing"
+    message: "BACKEND TESTING COMPLETE - CRITICAL ISSUE FOUND: Blog creation API endpoint is properly implemented but fails due to Emergent LLM API service issues. Fixed code bug (LlmChat initialization), added retry logic, but Claude API consistently returns 502 Bad Gateway errors. All other backend functionality works (documents CRUD, categories, basic API health). The blog creation feature cannot be tested until LLM service is stable. Recommend using web search tool to find alternative LLM provider or wait for service recovery."

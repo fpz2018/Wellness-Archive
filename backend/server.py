@@ -973,7 +973,18 @@ Genereer een volledig blog artikel dat klaar is voor publicatie."""
         ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         user_message = UserMessage(text=blog_prompt)
-        response = await chat.send_message(user_message)
+        
+        # Retry logic for API errors
+        max_retries = 2
+        for attempt in range(max_retries + 1):
+            try:
+                response = await chat.send_message(user_message)
+                break
+            except Exception as e:
+                if attempt == max_retries:
+                    raise e
+                logging.warning(f"Blog creation attempt {attempt + 1} failed: {str(e)}, retrying...")
+                await asyncio.sleep(2)  # Wait 2 seconds before retry
         
         blog_content = response
         

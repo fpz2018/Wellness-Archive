@@ -560,13 +560,51 @@ const Dashboard = () => {
 
             <Separator />
 
+            {/* Featured Image for Blog Articles */}
+            {selectedDocument.featured_image_url && (
+              <div>
+                <h3 className="font-semibold mb-3">Uitgelichte Afbeelding</h3>
+                <div className="mb-4">
+                  <img 
+                    src={selectedDocument.featured_image_url} 
+                    alt={selectedDocument.title}
+                    className="w-full h-64 object-cover rounded-lg shadow-md"
+                    onError={(e) => {e.target.style.display = 'none'}}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Content */}
             <div>
               <h3 className="font-semibold mb-3">Inhoud</h3>
               <div className="prose prose-sm max-w-none">
-                <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">
-                  {selectedDocument.content}
-                </pre>
+                {selectedDocument.file_type === 'blog_article' ? (
+                  <div className="text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">
+                    {selectedDocument.content.split('\n\n').map((paragraph, index) => {
+                      // Check if it's a title (no punctuation at the end, relatively short)
+                      const isTitle = paragraph.length < 100 && !paragraph.endsWith('.') && !paragraph.endsWith(',') && !paragraph.endsWith(':') && paragraph.trim().length > 0 && !paragraph.includes('Bij ') && !paragraph.includes('Voor ') && !paragraph.includes('In ');
+                      
+                      if (isTitle) {
+                        return (
+                          <h3 key={index} className="text-lg font-semibold mb-3 mt-6 text-gray-800">
+                            {paragraph}
+                          </h3>
+                        );
+                      } else {
+                        return (
+                          <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+                            {paragraph}
+                          </p>
+                        );
+                      }
+                    })}
+                  </div>
+                ) : (
+                  <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">
+                    {selectedDocument.content}
+                  </pre>
+                )}
               </div>
             </div>
           </CardContent>

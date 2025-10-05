@@ -610,6 +610,14 @@ const KnowledgeBase = () => {
     description: ""
   });
   const [uploading, setUploading] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState(new Set());
+  const [showBlogModal, setShowBlogModal] = useState(false);
+  const [blogForm, setBlogForm] = useState({
+    title: "",
+    category: "Blog Articles",
+    customInstructions: ""
+  });
+  const [creatingBlog, setCreatingBlog] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 

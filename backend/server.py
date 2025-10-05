@@ -971,82 +971,79 @@ Genereer een volledig blog artikel dat klaar is voor publicatie."""
         source_titles = [doc['title'] for doc in source_documents]
         source_content_preview = " ".join([doc['content'][:100] for doc in source_documents])
         
-        # Create comprehensive mock blog content
-        mock_blog_content = f"""# {request.title}
+        # Create comprehensive mock blog content WITHOUT markdown
+        mock_blog_content = f"""{request.title}
 
 {request.title.lower()} begint met één kernidee: een holistische benadering die voeding, suppletie en leefstijl slim combineert. Bij Orthomoleculair Praktijk Zeist zien we dagelijks hoe een geïntegreerde aanpak resultaten oplevert waar symptoombestrijding faalt. In dit uitgebreide artikel verken je stap voor stap hoe je dat aanpakt, waar de quick wins zitten en hoe je valkuilen voorkomt.
 
 De orthomoleculaire benadering kent vele toepassingen: van spijsverteringsklachten en energie-issues tot pijn- en stressmanagement. Elke situatie kent zijn eigen nuances, maar ze delen gemeenschappelijke draden die orthomoleculair aanspreekbaar zijn. Door deze draden één voor één te ontrafelen en ze te vervangen door herstellende routines, verandert je biochemische landschap.
 
-## De biochemische basis van orthomoleculaire behandeling
+De biochemische basis van orthomoleculaire behandeling
 
 Om te begrijpen waarom orthomoleculaire interventies werken bij Fysiopraktijk Zeist, is het handig de belangrijkste "drivers" op een rij te zetten:
 
-- **Voedingsbalans**: De juiste verhouding van macro- en micronutriënten vormt de basis van cellulaire gezondheid
-- **Ontstekingsbalans**: Eicosanoïden uit verschillende vetzuren beïnvloeden ontstekingsprocessen
-- **Oxidatieve stress**: Bij chronische klachten is antioxidantverdediging vaak verlaagd
-- **Mitochondriale energie**: Optimale energieproductie vereist specifieke co-factoren
-- **Darmgezondheid**: Een gezonde darmbarrière voorkomt systemische ontstekingssignalen
-- **Neuro-endocriene as**: Stress en slaap beïnvloeden hormonale balans direct
+Voedingsbalans: De juiste verhouding van macro- en micronutriënten vormt de basis van cellulaire gezondheid. Een uitgebalanceerd voedingspatroon zorgt ervoor dat alle cellulaire processen optimaal kunnen functioneren.
 
-### Praktische implementatie bij Fysiopraktijk Zeist
+Ontstekingsbalans: Eicosanoïden uit verschillende vetzuren beïnvloeden ontstekingsprocessen in het lichaam. Door de juiste balans van omega-3 en omega-6 vetzuren kunnen we ontstekingsreacties moduleren.
 
-**Stap 1: Grondige analyse**
-Begin met een uitgebreide anamnese en eventuele laboratoriumtests. Bij Orthomoleculair Praktijk Zeist kijken we naar voedingspatronen, stressfactoren en biochemische markers.
+Oxidatieve stress: Bij chronische klachten is antioxidantverdediging vaak verlaagd. Het aanvullen van antioxidanten kan helpen bij het neutraliseren van vrije radicalen en het beschermen van cellen.
 
-**Stap 2: Voedingsoptimalisatie**
-- Kies voor onbewerkte, voedingsstofrijke producten
-- Balanceer omega-3 en omega-6 vetzuren
-- Zorg voor voldoende eiwit (1,2-1,6 g/kg lichaamsgewicht)
-- Integreer ontstekingsremmende kruiden en specerijen
+Mitochondriale energie: Optimale energieproductie vereist specifieke co-factoren zoals B-vitamines, magnesium en coenzym Q10. Deze nutrients zijn essentieel voor de cellulaire energieproductie.
 
-**Stap 3: Gerichte suppletie**
-Afhankelijk van individuele behoeften kunnen we bij Fysio Zeist aanvullen met:
-- Magnesium voor spier- en zenuwfunctie
-- Vitamine D voor immuunbalans
-- Omega-3 voor ontstekingsregulatie
-- B-vitamines voor energiemetabolisme
+Darmgezondheid: Een gezonde darmbarrière voorkomt systemische ontstekingssignalen. De darm-hersenverbinding speelt een cruciale rol bij vele gezondheidsproblemen.
 
-**Stap 4: Leefstijlaanpassingen**
-- Optimaliseer slaapkwaliteit en circadiane ritmes
-- Implementeer stressmanagement technieken
-- Bouw geleidelijk beweging op binnen individuele mogelijkheden
+Neuro-endocriene as: Stress en slaap beïnvloeden hormonale balans direct. Chronische stress kan leiden tot dysregulatie van verschillende hormoonsystemen.
 
-## Veelgemaakte fouten en hoe je ze voorkomt
+Praktische implementatie bij Fysiopraktijk Zeist
 
-Bij Orthomoleculair Praktijk Zeist zien we regelmatig dezelfde valkuilen:
+Stap 1: Grondige analyse
+Begin met een uitgebreide anamnese en eventuele laboratoriumtests. Bij Orthomoleculair Praktijk Zeist kijken we naar voedingspatronen, stressfactoren en biochemische markers. Deze holistische benadering geeft ons inzicht in de onderliggende oorzaken van klachten.
 
-1. **Te snelle verwachtingen**: Cellulaire veranderingen hebben tijd nodig - reken op 8-12 weken voor merkbare verbetering
-2. **Isolatie van supplementen**: Een holistisch plan werkt beter dan losse pillen
-3. **Negeren van individuele verschillen**: Wat bij de één werkt, werkt niet per se bij de ander
-4. **Inconsistentie**: Regelmatige toepassing is crucialer dan perfectie
+Stap 2: Voedingsoptimalisatie
+Kies voor onbewerkte, voedingsstofrijke producten die de basis vormen voor optimale gezondheid. Balanceer omega-3 en omega-6 vetzuren door bewuste keuzes in vetten en oliën. Zorg voor voldoende eiwit (1,2-1,6 g/kg lichaamsgewicht) voor weefselonderhoud en herstel. Integreer ontstekingsremmende kruiden en specerijen zoals kurkuma, gember en knoflook.
 
-## Praktijkvoorbeelden uit Zeist
+Stap 3: Gerichte suppletie
+Afhankelijk van individuele behoeften kunnen we bij Fysio Zeist aanvullen met specifieke voedingssupplementen. Magnesium voor spier- en zenuwfunctie, vooral belangrijk bij stress en spierspanning. Vitamine D voor immuunbalans en botgezondheid, met name in de Nederlandse klimaatomstandigheden. Omega-3 voor ontstekingsregulatie en hersenfunctie. B-vitamines voor energiemetabolisme en zenuwstelsel ondersteuning.
 
-In onze praktijk zien we regelmatig hoe patiënten profiteren van deze geïntegreerde aanpak. Combinaties van voedingsaanpassingen, gerichte suppletie en leefstijlinterventies leveren vaak de beste resultaten.
+Stap 4: Leefstijlaanpassingen
+Optimaliseer slaapkwaliteit en circadiane ritmes door regelmatige slaaptijden en beperking van blauw licht 's avonds. Implementeer stressmanagement technieken zoals ademhalingsoefeningen, meditatie of yoga. Bouw geleidelijk beweging op binnen individuele mogelijkheden, waarbij consistentie belangrijker is dan intensiteit.
+
+Veelgemaakte fouten en hoe je ze voorkomt
+
+Bij Orthomoleculair Praktijk Zeist zien we regelmatig dezelfde valkuilen die patiënten tegenkomen tijdens hun gezondheidsreis.
+
+Te snelle verwachtingen: Cellulaire veranderingen hebben tijd nodig - reken op 8-12 weken voor merkbare verbetering. Het is belangrijk om geduldig te blijven en het proces te vertrouwen.
+
+Isolatie van supplementen: Een holistisch plan werkt beter dan losse pillen. Supplementen zijn een aanvulling op, geen vervanging van een gezonde leefstijl en voeding.
+
+Negeren van individuele verschillen: Wat bij de één werkt, werkt niet per se bij de ander. Elke persoon heeft unieke behoeften en vereist een geïndividualiseerde aanpak.
+
+Inconsistentie: Regelmatige toepassing is crucialer dan perfectie. Het is beter om 80% consistent te zijn dan 100% perfect voor korte tijd.
+
+Praktijkvoorbeelden uit Zeist
+
+In onze praktijk zien we regelmatig hoe patiënten profiteren van deze geïntegreerde aanpak. Combinaties van voedingsaanpassingen, gerichte suppletie en leefstijlinterventies leveren vaak de beste resultaten. Een holistische benadering waarbij alle aspecten van gezondheid worden geadresseerd, toont consistent betere uitkomsten dan geïsoleerde interventies.
 
 {request.custom_instructions if request.custom_instructions else ''}
 
-## Veelgestelde vragen (FAQ)
+Veelgestelde vragen
 
-**Hoe lang duurt het voordat ik resultaat zie?**
-Korte termijn (2-4 weken): Verbeterde energie en slaap. Middellang (6-8 weken): Stabilere stemming en spijsvertering. Lange termijn (3-6 maanden): Structurele verbeteringen in chronische klachten.
+Hoe lang duurt het voordat ik resultaat zie?
+Korte termijn (2-4 weken): Verbeterde energie en slaap. Middellang (6-8 weken): Stabilere stemming en spijsvertering. Lange termijn (3-6 maanden): Structurele verbeteringen in chronische klachten. Geduld en consistentie zijn essentieel voor duurzame resultaten.
 
-**Is orthomoleculaire behandeling veilig?**
-Bij correcte toepassing en professionele begeleiding is orthomoleculaire geneeskunde zeer veilig. Bij Fysiopraktijk Zeist houden we altijd rekening met medicijngebruik en bestaande aandoeningen.
+Is orthomoleculaire behandeling veilig?
+Bij correcte toepassing en professionele begeleiding is orthomoleculaire geneeskunde zeer veilig. Bij Fysiopraktijk Zeist houden we altijd rekening met medicijngebruik en bestaande aandoeningen. We werken samen met je huisarts indien nodig.
 
-**Kan ik orthomoleculaire behandeling combineren met reguliere medicatie?**
-Ja, in veel gevallen is combinatie mogelijk. Overleg altijd met je behandelaar bij Orthomoleculair Praktijk Zeist voordat je wijzigingen aanbrengt.
+Kan ik orthomoleculaire behandeling combineren met reguliere medicatie?
+Ja, in veel gevallen is combinatie mogelijk en zelfs wenselijk. Overleg altijd met je behandelaar bij Orthomoleculair Praktijk Zeist voordat je wijzigingen aanbrengt. We hebben ervaring met medicijn-supplement interacties.
 
-**Wat zijn de kosten van orthomoleculaire behandeling?**
-Kosten variëren per individuele situatie. Neem contact op met Fysio Zeist voor een persoonlijk advies en kostenraming.
+Wat zijn de kosten van orthomoleculaire behandeling?
+Kosten variëren per individuele situatie en behandelplan. Neem contact op met Fysio Zeist voor een persoonlijk advies en kostenraming. We geloven in transparantie en bespreken altijd vooraf de verwachte kosten.
 
----
+Disclaimer: De informatie in dit artikel is educatief en vervangt geen medisch advies. Overleg altijd met je behandelaar bij Orthomoleculair Praktijk Zeist, zeker bij medicijngebruik of bestaande aandoeningen.
 
-*Disclaimer: De informatie in dit artikel is educatief en vervangt geen medisch advies. Overleg altijd met je behandelaar bij Orthomoleculair Praktijk Zeist, zeker bij medicijngebruik of bestaande aandoeningen.*
-
-**Over Orthomoleculair Praktijk Zeist**
-Gevestigd in het hart van Zeist, combineren we moderne orthomoleculaire kennis met persoonlijke begeleiding. Fysio Zeist staat voor kwaliteit, expertise en resultaatgerichte zorg."""
+Over Orthomoleculair Praktijk Zeist
+Gevestigd in het hart van Zeist, combineren we moderne orthomoleculaire kennis met persoonlijke begeleiding. Fysio Zeist staat voor kwaliteit, expertise en resultaatgerichte zorg. Ons team heeft jarenlange ervaring in het begeleiden van patiënten naar optimale gezondheid."""
 
         # Generate realistic SEO metadata
         base_title = request.title[:50] if len(request.title) <= 50 else request.title[:47] + "..."

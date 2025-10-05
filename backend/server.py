@@ -1077,7 +1077,7 @@ Gevestigd in het hart van Zeist, combineren we moderne orthomoleculaire kennis m
         # Create blog article document
         blog_article = BlogArticle(
             title=request.title,
-            content=blog_content,
+            content=mock_blog_content,
             tags=seo_data.get("suggested_tags", []),
             category=request.category,
             meta_title=seo_data.get("meta_title", f"{request.title} | Orthomoleculair Praktijk Zeist"),

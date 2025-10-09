@@ -523,12 +523,17 @@ async def paste_document(
         tags = await generate_tags_with_ai(title, translated_content)
         references = await extract_references_with_ai(translated_content)
         
+        # Generate preview for large documents
+        preview, is_large = generate_document_preview(translated_content, title)
+        
         # Create document
         doc = Document(
             title=title,
             category=category,
             file_type="text",
             content=translated_content,
+            content_preview=preview if is_large else None,
+            is_large_document=is_large,
             tags=tags,
             references=references,
             file_size=len(translated_content),

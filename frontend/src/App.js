@@ -1144,7 +1144,7 @@ const KnowledgeBase = () => {
                 documents.map((doc) => (
                   <Card 
                     key={doc.id} 
-                    className={`cursor-pointer transition-all hover:shadow-md ${selectedDoc?.id === doc.id ? 'border-2 border-teal-500' : ''} ${selectedDocuments.has(doc.id) ? 'bg-purple-50 border-purple-300' : ''}`}
+                    className={`cursor-pointer transition-all hover:shadow-md ${selectedDoc?.id === doc.id ? 'border-2 border-teal-500' : ''}`}
                     onClick={() => handleViewDocument(doc.id)}
                     data-testid={`document-card-${doc.id}`}
                   >

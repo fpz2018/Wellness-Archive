@@ -577,11 +577,37 @@ const Dashboard = () => {
 
             {/* Content */}
             <div>
-              <h3 className="font-semibold mb-3">Inhoud</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold">Inhoud</h3>
+                {selectedDocument.is_large_document && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      Groot document ({selectedDocument.file_size?.toLocaleString() || 'N/A'} karakters)
+                    </Badge>
+                    {showFullContent ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowFullContent(false)}
+                      >
+                        Toon Preview
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowFullContent(true)}
+                      >
+                        Toon Volledig
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="prose prose-sm max-w-none">
                 {selectedDocument.file_type === 'blog_article' ? (
                   <div className="text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">
-                    {selectedDocument.content.split('\n\n').map((paragraph, index) => {
+                    {(showFullContent ? selectedDocument.content : (selectedDocument.content_preview || selectedDocument.content)).split('\n\n').map((paragraph, index) => {
                       // Check if it's a title (no punctuation at the end, relatively short)
                       const isTitle = paragraph.length < 100 && !paragraph.endsWith('.') && !paragraph.endsWith(',') && !paragraph.endsWith(':') && paragraph.trim().length > 0 && !paragraph.includes('Bij ') && !paragraph.includes('Voor ') && !paragraph.includes('In ');
                       
@@ -599,6 +625,16 @@ const Dashboard = () => {
                         );
                       }
                     })}
+                  </div>
+                ) : selectedDocument.is_large_document && !showFullContent ? (
+                  <div className="text-sm leading-relaxed bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="mb-3 flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                      <span className="text-blue-800 font-medium">Document Preview</span>
+                    </div>
+                    <pre className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
+                      {selectedDocument.content_preview || selectedDocument.content}
+                    </pre>
                   </div>
                 ) : (
                   <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">

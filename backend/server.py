@@ -382,6 +382,7 @@ def generate_oneliner_mock(title: str, content: str) -> str:
 
 def generate_consumer_blog_title_mock(title: str, content: str) -> str:
     """Generate consumer-friendly blog title like the examples provided"""
+    import random
     
     words = content.lower().split()
     
@@ -400,57 +401,89 @@ def generate_consumer_blog_title_mock(title: str, content: str) -> str:
     if any(kw in found_words for kw in pain_keywords):
         options = [
             "de beste voedingssupplementen bij pijn",
-            "top 5 natuurlijke pijnstillers",
+            "top 5 natuurlijke pijnstillers die echt werken",
             "orthomoleculaire aanpak bij chronische pijn",
-            "voeding tegen ontstekingsreacties"
+            "voeding tegen ontstekingsreacties en pijn",
+            "de top 5 voedingssupplementen bij spierkrampen",
+            "natuurlijke pijnbestrijding: wat werkt echt?",
+            "ontstekingsremmende supplementen tegen pijn",
+            "pijnklachten? deze voedingsmiddelen helpen"
         ]
     elif any(kw in found_words for kw in gut_keywords):
         options = [
             "de beste voedingsmiddelen voor je darmen",
             "top 5 supplementen voor een gezonde darm",
             "hoe verbeter je je darmgezondheid natuurlijk",
-            "probiotica: wat werkt echt?"
+            "probiotica: wat werkt echt voor je darmen?",
+            "darmklachten? dit kun je er zelf aan doen",
+            "gezonde darmen beginnen met deze voeding",
+            "microbioom herstellen: praktische tips",
+            "spijsverteringsklachten aanpakken met voeding"
         ]
     elif any(kw in found_words for kw in vitamin_keywords):
         if 'vitamine d' in found_words or 'vitamin d' in found_words:
             options = [
                 "hoe optimaliseer je vitamine D in de winter",
                 "vitamine D tekort: wat kun je er zelf aan doen",
-                "de beste bronnen van vitamine D"
+                "de beste bronnen van vitamine D",
+                "vitamine D supplementatie: waar moet je op letten",
+                "winterdepressie? check je vitamine D"
             ]
         else:
             options = [
                 "top 5 voedingssupplementen die iedereen nodig heeft",
-                "welke vitamines heb je echt nodig",
-                "supplementen: waar moet je op letten"
+                "welke vitamines heb je echt nodig?",
+                "supplementen: waar moet je op letten",
+                "vitaminetekorten herkennen en aanpakken",
+                "de basis supplementen voor optimale gezondheid",
+                "mineralen en vitamines: wat doe je ermee?"
             ]
     elif any(kw in found_words for kw in hormone_keywords):
         if 'ghreline' in found_words:
-            return "ghreline: het belangrijke hongerhormoon"
+            options = [
+                "ghreline: het belangrijke hongerhormoon",
+                "hongerhormoon ghreline: wat doet het?",
+                "ghreline en gewichtsbeheersing: zo werkt het"
+            ]
         elif 'leptine' in found_words:
-            return "leptine: wat is het en waar moet je op letten?"
+            options = [
+                "leptine: wat is het en waar moet je op letten?",
+                "leptine en afvallen: hoe zit dat?",
+                "verzadigingshormoon leptine: praktische tips"
+            ]
         else:
             options = [
                 "hormonen in balans: zo doe je dat",
-                "natuurlijke hormoonbalans: tips en tricks"
+                "natuurlijke hormoonbalans: tips en tricks",
+                "hormoonhuishouding verstoren? dit helpt",
+                "hormonen en voeding: belangrijke connectie"
             ]
     elif any(kw in found_words for kw in stress_keywords):
         options = [
             "stress en voeding: hoe zit dat?",
             "natuurlijke stressverlichtende voedingsmiddelen",
-            "voeding voor een beter humeur"
+            "voeding voor een beter humeur",
+            "stress aanpakken met orthomoleculaire voeding",
+            "burn-out voorkomen: de rol van voeding",
+            "slaapproblemen? probeer deze supplementen"
         ]
     elif any(kw in found_words for kw in seasonal_keywords):
         options = [
             "snotterig en verkouden? dit kun je er vanuit orthomoleculair perspectief zelf aan doen",
             "natuurlijke griepbestrijders uit je keuken",
-            "boost je immuniteit in de winter"
+            "boost je immuniteit in de winter",
+            "verkoudheid voorkomen met deze supplementen",
+            "winterklachten aanpakken: orthomoleculaire tips",
+            "gezonde traktaties in Sinterklaastijd"
         ]
     elif any(kw in found_words for kw in energy_keywords):
         options = [
             "natuurlijke energieboosters die echt werken",
             "vermoeidheid aanpakken met voeding",
-            "top 5 supplementen tegen vermoeidheid"
+            "top 5 supplementen tegen vermoeidheid",
+            "chronisch moe? check deze voedingsstoffen",
+            "energie krijgen uit je voeding: zo doe je dat",
+            "burn-out herstel met orthomoleculaire voeding"
         ]
     else:
         # Generic health topics
@@ -458,11 +491,13 @@ def generate_consumer_blog_title_mock(title: str, content: str) -> str:
             "natuurlijke gezondheid: waar begin je",
             "orthomoleculaire voeding voor beginners",
             "gezonde voeding: praktische tips",
-            "supplementen: de basis die je moet weten"
+            "supplementen: de basis die je moet weten",
+            "preventieve gezondheidszorg: wat kun je zelf doen",
+            "voeding als medicijn: hoe werkt dat?"
         ]
     
-    # Return first option (could be randomized)
-    return options[0]
+    # Return random option each time
+    return random.choice(options)
 
 # Document routes
 @api_router.post("/documents", response_model=Document)

@@ -381,123 +381,214 @@ def generate_oneliner_mock(title: str, content: str) -> str:
         return f"Praktische inzichten over {title.lower()} vanuit orthomoleculair perspectief, relevant voor natuurgeneeskundige behandeling en preventie."
 
 def generate_consumer_blog_title_mock(title: str, content: str) -> str:
-    """Generate consumer-friendly blog title like the examples provided"""
+    """Generate consumer-friendly blog title based on actual document content"""
     import random
+    import re
     
-    words = content.lower().split()
+    # Extract key concepts, nutrients, and topics from the actual content
+    content_lower = content.lower()
     
-    # Keywords to identify content themes
-    pain_keywords = ['pijn', 'kramp', 'spierkramp', 'artritis', 'ontstekingsremming']
-    gut_keywords = ['darm', 'spijsvertering', 'microbioom', 'probiotica', 'vezels']
-    vitamin_keywords = ['vitamine', 'mineralen', 'supplement', 'tekort', 'deficiëntie']
-    hormone_keywords = ['hormoon', 'ghreline', 'leptine', 'insuline', 'cortisol']
-    stress_keywords = ['stress', 'angst', 'slaap', 'vermoeidheid', 'burnout']
-    seasonal_keywords = ['winter', 'koud', 'verkouden', 'griep', 'immuniteit']
-    energy_keywords = ['energie', 'vermoeidheid', 'moe', 'uitputting']
+    # Extract specific nutrients, vitamins, minerals mentioned in content
+    nutrients = []
+    vitamin_pattern = r'\b(vitamine?\s*[a-z0-9]+|vitamin\s*[a-z0-9]+|foliumzuur|biotine|niacine|riboflavine|thiamine)\b'
+    mineral_pattern = r'\b(magnesium|calcium|ijzer|zink|selenium|jodium|kalium|fosfor|chroom|mangaan|koper)\b'
+    supplement_pattern = r'\b(omega[- ]?3|probiotica|prebiotica|coq10|co-enzym|kurkuma|ginkgo|ginseng|spirulina|chlorella)\b'
+    condition_pattern = r'\b(diabetes|hypertensie|cholesterol|artritis|fibromyalgie|migraine|eczeem|psoriasis|astma|allergieën?|depressie|angst|adhd|autisme|alzheimer|parkinson|kanker|hart[- ]?vaatziekten?)\b'
     
-    # Find dominant theme
-    found_words = ' '.join(words)
+    # Find all matches
+    vitamins = re.findall(vitamin_pattern, content_lower)
+    minerals = re.findall(mineral_pattern, content_lower)  
+    supplements = re.findall(supplement_pattern, content_lower)
+    conditions = re.findall(condition_pattern, content_lower)
     
-    if any(kw in found_words for kw in pain_keywords):
-        options = [
-            "de beste voedingssupplementen bij pijn",
-            "top 5 natuurlijke pijnstillers die echt werken",
-            "orthomoleculaire aanpak bij chronische pijn",
-            "voeding tegen ontstekingsreacties en pijn",
-            "de top 5 voedingssupplementen bij spierkrampen",
-            "natuurlijke pijnbestrijding: wat werkt echt?",
-            "ontstekingsremmende supplementen tegen pijn",
-            "pijnklachten? deze voedingsmiddelen helpen"
-        ]
-    elif any(kw in found_words for kw in gut_keywords):
-        options = [
-            "de beste voedingsmiddelen voor je darmen",
-            "top 5 supplementen voor een gezonde darm",
-            "hoe verbeter je je darmgezondheid natuurlijk",
-            "probiotica: wat werkt echt voor je darmen?",
-            "darmklachten? dit kun je er zelf aan doen",
-            "gezonde darmen beginnen met deze voeding",
-            "microbioom herstellen: praktische tips",
-            "spijsverteringsklachten aanpakken met voeding"
-        ]
-    elif any(kw in found_words for kw in vitamin_keywords):
-        if 'vitamine d' in found_words or 'vitamin d' in found_words:
-            options = [
-                "hoe optimaliseer je vitamine D in de winter",
-                "vitamine D tekort: wat kun je er zelf aan doen",
+    # Also look for food items and health topics
+    foods = []
+    food_patterns = [
+        r'\b(groenten?|fruit|vis|vlees|noten|zaden|graanproducten?|peulvruchten?|oliën?|kruiden?)\b',
+        r'\b(broccoli|spinazie|wortel|biet|avocado|blauwe bessen?|zalm|sardines?|walnoten|lijnzaad|kurkuma|gember)\b'
+    ]
+    for pattern in food_patterns:
+        foods.extend(re.findall(pattern, content_lower))
+    
+    # Generate content-specific blog titles based on what's actually in the document
+    blog_options = []
+    
+    # Vitamin-specific titles
+    for vitamin in set(vitamins):
+        if 'vitamine d' in vitamin or 'vitamin d' in vitamin:
+            blog_options.extend([
+                "vitamine D: waarom heb je het nodig?",
+                "hoe optimaliseer je vitamine D natuurlijk",
+                "vitamine D tekort herkennen en aanpakken",
                 "de beste bronnen van vitamine D",
-                "vitamine D supplementatie: waar moet je op letten",
-                "winterdepressie? check je vitamine D"
-            ]
-        else:
-            options = [
-                "top 5 voedingssupplementen die iedereen nodig heeft",
-                "welke vitamines heb je echt nodig?",
-                "supplementen: waar moet je op letten",
-                "vitaminetekorten herkennen en aanpakken",
-                "de basis supplementen voor optimale gezondheid",
-                "mineralen en vitamines: wat doe je ermee?"
-            ]
-    elif any(kw in found_words for kw in hormone_keywords):
-        if 'ghreline' in found_words:
-            options = [
-                "ghreline: het belangrijke hongerhormoon",
-                "hongerhormoon ghreline: wat doet het?",
-                "ghreline en gewichtsbeheersing: zo werkt het"
-            ]
-        elif 'leptine' in found_words:
-            options = [
-                "leptine: wat is het en waar moet je op letten?",
-                "leptine en afvallen: hoe zit dat?",
-                "verzadigingshormoon leptine: praktische tips"
-            ]
-        else:
-            options = [
-                "hormonen in balans: zo doe je dat",
-                "natuurlijke hormoonbalans: tips en tricks",
-                "hormoonhuishouding verstoren? dit helpt",
-                "hormonen en voeding: belangrijke connectie"
-            ]
-    elif any(kw in found_words for kw in stress_keywords):
-        options = [
-            "stress en voeding: hoe zit dat?",
-            "natuurlijke stressverlichtende voedingsmiddelen",
-            "voeding voor een beter humeur",
-            "stress aanpakken met orthomoleculaire voeding",
-            "burn-out voorkomen: de rol van voeding",
-            "slaapproblemen? probeer deze supplementen"
-        ]
-    elif any(kw in found_words for kw in seasonal_keywords):
-        options = [
-            "snotterig en verkouden? dit kun je er vanuit orthomoleculair perspectief zelf aan doen",
-            "natuurlijke griepbestrijders uit je keuken",
-            "boost je immuniteit in de winter",
-            "verkoudheid voorkomen met deze supplementen",
-            "winterklachten aanpakken: orthomoleculaire tips",
-            "gezonde traktaties in Sinterklaastijd"
-        ]
-    elif any(kw in found_words for kw in energy_keywords):
-        options = [
-            "natuurlijke energieboosters die echt werken",
-            "vermoeidheid aanpakken met voeding",
-            "top 5 supplementen tegen vermoeidheid",
-            "chronisch moe? check deze voedingsstoffen",
-            "energie krijgen uit je voeding: zo doe je dat",
-            "burn-out herstel met orthomoleculaire voeding"
-        ]
-    else:
-        # Generic health topics
-        options = [
-            "natuurlijke gezondheid: waar begin je",
-            "orthomoleculaire voeding voor beginners",
-            "gezonde voeding: praktische tips",
-            "supplementen: de basis die je moet weten",
-            "preventieve gezondheidszorg: wat kun je zelf doen",
-            "voeding als medicijn: hoe werkt dat?"
-        ]
+                "vitamine D en je immuunsysteem"
+            ])
+        elif 'vitamine c' in vitamin or 'vitamin c' in vitamin:
+            blog_options.extend([
+                "vitamine C: meer dan alleen weerstand",
+                "natuurlijke vitamine C bronnen die werken",
+                "hoe veel vitamine C heb je echt nodig?",
+                "vitamine C bij verkoudheid: werkt het?"
+            ])
+        elif 'vitamine b' in vitamin or 'b-complex' in content_lower:
+            blog_options.extend([
+                "B-vitamines: energie uit je voeding",
+                "welke B-vitamines heb je nodig?",
+                "B12 tekort: signalen en oplossingen",
+                "foliumzuur: niet alleen voor zwangere vrouwen"
+            ])
     
-    # Return random option each time
-    return random.choice(options)
+    # Mineral-specific titles  
+    for mineral in set(minerals):
+        if mineral == 'magnesium':
+            blog_options.extend([
+                "magnesium: het ontspanningsmineraal",
+                "magnesiumtekort herkennen en oplossen",
+                "de beste magnesium supplementen",
+                "magnesium tegen stress en spierkrampen"
+            ])
+        elif mineral == 'ijzer':
+            blog_options.extend([
+                "ijzertekort: meer dan alleen vermoeidheid",
+                "ijzer uit plantaardige bronnen",
+                "hoe verbeter je ijzeropname natuurlijk?",
+                "ijzer en je energieniveau"
+            ])
+        elif mineral == 'zink':
+            blog_options.extend([
+                "zink: het immuunmineraal",
+                "zinktekort herkennen: deze signalen wijzen erop",
+                "de beste natuurlijke zinkbronnen",
+                "zink voor huid, haar en nagels"
+            ])
+        elif mineral == 'calcium':
+            blog_options.extend([
+                "calcium zonder zuivel: kan dat?",
+                "calcium en vitamine D: het perfecte duo",
+                "sterke botten na de menopauze",
+                "calcium uit plantaardige bronnen"
+            ])
+    
+    # Supplement-specific titles
+    for supplement in set(supplements):
+        if 'omega' in supplement:
+            blog_options.extend([
+                "omega-3: waarom vis niet genoeg is",
+                "de beste omega-3 supplementen",
+                "omega-3 voor hersenen en hart",
+                "plantaardige omega-3: wat zijn de opties?"
+            ])
+        elif 'probiotica' in supplement:
+            blog_options.extend([
+                "probiotica: welke stammen werken echt?",
+                "probiotica na antibiotica: zo doe je het",
+                "fermented food vs probiotica supplementen",
+                "probiotica voor een gezonde darm"
+            ])
+        elif 'kurkuma' in supplement:
+            blog_options.extend([
+                "kurkuma: het gouden ontstekingsremmende kruid",
+                "kurkuma supplementen: waar moet je op letten?",
+                "kurkuma in de keuken: zo gebruik je het",
+                "kurkuma en zwarte peper: waarom samen?"
+            ])
+    
+    # Condition-specific titles
+    for condition in set(conditions):
+        if condition in ['diabetes', 'bloedsuiker']:
+            blog_options.extend([
+                "bloedsuiker stabiliseren met voeding",
+                "natuurlijke diabeteszorg: wat helpt?",
+                "suikervrije snacks die echt lekker zijn",
+                "insulineresistentie omkeren met voeding"
+            ])
+        elif condition in ['hypertensie', 'hoge bloeddruk']:
+            blog_options.extend([
+                "bloeddruk verlagen zonder medicijnen",
+                "zout verminderen: praktische tips",
+                "kalium: het vergeten mineraal voor je hart",
+                "natuurlijke bloeddrukverlagende voeding"
+            ])
+        elif condition == 'cholesterol':
+            blog_options.extend([
+                "cholesterol verlagen met deze voedingsmiddelen",
+                "goed vs slecht cholesterol: wat is het verschil?",
+                "cholesterolvrije voeding: myt of waarheid?",
+                "natuurlijke cholesterolverlaging: zo werkt het"
+            ])
+        elif condition in ['artritis', 'gewrichtspijn']:
+            blog_options.extend([
+                "ontstekingsremmende voeding bij artritis",
+                "gewrichtspijn verlichting uit je keuken",
+                "voedingsmiddelen die ontstekingen verergeren",
+                "natuurlijke gewrichtsverzorging"
+            ])
+    
+    # Food-specific titles
+    for food in set(foods):
+        if food in ['vis', 'zalm', 'sardines']:
+            blog_options.extend([
+                "vette vis: waarom 2x per week niet genoeg is",
+                "duurzame visoliën: waar moet je op letten?",
+                "vis eten met kwik: hoe minimaliseer je risico's?",
+                "de beste vissoorten voor omega-3"
+            ])
+        elif food in ['noten', 'walnoten']:
+            blog_options.extend([
+                "noten: de gezondste snack voor je brein",
+                "welke noten zijn het gezondst?",
+                "notenschillen: weg ermee of laten zitten?",
+                "noten en gewichtsbeheersing: past dat samen?"
+            ])
+    
+    # If document mentions metabolism/energy
+    if any(word in content_lower for word in ['metabolisme', 'stofwisseling', 'energieproductie', 'mitochondriën']):
+        blog_options.extend([
+            "je metabolisme aanjagen: natuurlijke methoden",
+            "mitochondriën: de energiefabrieken van je cellen",
+            "stofwisseling verbeteren na je 40e",
+            "energie krijgen uit je voeding: zo werkt het"
+        ])
+    
+    # If document mentions digestion
+    if any(word in content_lower for word in ['spijsvertering', 'darmgezondheid', 'microbioom']):
+        blog_options.extend([
+            "spijsvertering optimaliseren: praktische tips",
+            "microbioom herstellen na antibiotica",
+            "darmgezondheid en je immuunsysteem",
+            "fermented foods: de natuurlijke probiotica"
+        ])
+    
+    # If document mentions hormones
+    if any(word in content_lower for word in ['hormonen', 'oestrogeen', 'testosteron', 'cortisol', 'insuline', 'schildklier']):
+        blog_options.extend([
+            "hormonen balanceren met voeding",
+            "schildklierfunctie ondersteunen natuurlijk",
+            "stress hormonen verlagen: voedingstips",
+            "hormonen en gewichtstoename: het verband"
+        ])
+    
+    # If no specific content matches found, use document title for inspiration
+    if not blog_options:
+        title_words = title.lower().split()
+        if any(word in title_words for word in ['advanced', 'nutrition', 'metabolisme', 'voeding']):
+            blog_options = [
+                "voeding en metabolisme: de basis uitgelegd",
+                "advanced nutrition: wat betekent dat voor jou?",
+                "wetenschappelijk bewezen voedingstips",
+                "voedingsleer voor de praktijk"
+            ]
+        else:
+            # Fallback generic options
+            blog_options = [
+                "orthomoleculaire voeding: waar begin je?",
+                "natuurlijke gezondheid: de basis principes",
+                "voedingssupplementen: wat werkt echt?",
+                "preventieve gezondheidszorg met voeding"
+            ]
+    
+    # Return random option from the content-specific options
+    return random.choice(blog_options)
 
 # Document routes
 @api_router.post("/documents", response_model=Document)

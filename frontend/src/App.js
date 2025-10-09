@@ -976,10 +976,7 @@ const KnowledgeBase = () => {
             <Settings className="h-4 w-4 mr-2" />
             Categorieën
           </Button>
-          <Button onClick={handleExportOneliners} variant="outline" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white" data-testid="export-oneliners-btn">
-            <Download className="h-4 w-4 mr-2" />
-            Export voor Make.com
-          </Button>
+          {/* Removed export functionality */}
           <Button onClick={() => setShowImportModal(true)} className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700" data-testid="import-document-btn">
             <Upload className="h-4 w-4 mr-2" />
             Kennis Importeren

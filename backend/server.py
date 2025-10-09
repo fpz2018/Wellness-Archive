@@ -48,6 +48,7 @@ class Document(BaseModel):
     content: str
     content_preview: Optional[str] = None  # Short excerpt for UI display
     is_large_document: bool = False  # Flag for large documents
+    one_liner: Optional[str] = None  # One sentence summary for Make.com automation
     tags: List[str] = []
     references: List[str] = []
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

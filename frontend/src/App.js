@@ -811,60 +811,7 @@ const KnowledgeBase = () => {
     }
   };
 
-  const handleDocumentSelect = (docId) => {
-    const newSelected = new Set(selectedDocuments);
-    if (newSelected.has(docId)) {
-      newSelected.delete(docId);
-    } else {
-      newSelected.add(docId);
-    }
-    setSelectedDocuments(newSelected);
-  };
-
-  const handleCreateBlog = () => {
-    if (selectedDocuments.size === 0) {
-      toast.error("Selecteer minimaal één document om een blog artikel te maken");
-      return;
-    }
-    setShowBlogModal(true);
-  };
-
-  const handleBlogSubmit = async () => {
-    if (!blogForm.title.trim()) {
-      toast.error("Blog titel is verplicht");
-      return;
-    }
-
-    setCreatingBlog(true);
-    try {
-      const response = await axios.post(`${API}/blog/create`, {
-        document_ids: Array.from(selectedDocuments),
-        title: blogForm.title,
-        category: blogForm.category,
-        custom_instructions: blogForm.customInstructions
-      });
-
-      toast.success("Blog artikel succesvol gegenereerd!");
-      
-      // Reset form and selections
-      setBlogForm({ title: "", category: "Blog Articles", customInstructions: "" });
-      setSelectedDocuments(new Set());
-      setShowBlogModal(false);
-      
-      // Refresh documents to show new blog article
-      fetchDocuments();
-      
-      // Navigate to the new blog article
-      if (response.data.blog_id) {
-        navigate(`/document/${response.data.blog_id}`);
-      }
-      
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Fout bij maken blog artikel");
-    } finally {
-      setCreatingBlog(false);
-    }
-  };
+  // Removed blog functionality - using Make.com automation instead
 
   const handlePasteSubmit = async () => {
     if (!pasteForm.title || !pasteForm.content) {

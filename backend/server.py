@@ -464,12 +464,17 @@ async def upload_document(
             file_id = fs.put(file_content, filename=file.filename, content_type=file.content_type or 'application/pdf')
             has_original = True
         
+        # Generate preview for large documents
+        preview, is_large = generate_document_preview(translated_content, doc_title)
+        
         # Create document
         doc = Document(
             title=doc_title,
             category=category,
             file_type=file_type,
             content=translated_content,
+            content_preview=preview if is_large else None,
+            is_large_document=is_large,
             tags=tags,
             references=references,
             file_size=len(translated_content),

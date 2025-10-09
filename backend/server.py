@@ -294,6 +294,60 @@ Antwoord alleen met de referenties of GEEN."""
         logging.error(f"Error extracting references: {str(e)}")
         return []
 
+# Helper functions
+def generate_document_preview(content: str, title: str = "") -> tuple[str, bool]:
+    """Generate intelligent preview for documents and determine if it's a large document"""
+    
+    # Define thresholds
+    LARGE_DOCUMENT_THRESHOLD = 2000  # characters
+    PREVIEW_LENGTH = 800  # characters for preview
+    
+    content_length = len(content)
+    is_large = content_length > LARGE_DOCUMENT_THRESHOLD
+    
+    if not is_large:
+        # Small document - return full content
+        return content, False
+    
+    # Large document - generate intelligent preview
+    lines = content.split('\n')
+    preview_lines = []
+    char_count = 0
+    
+    # Always include title if provided
+    if title:
+        preview_lines.append(f"Samenvatting van: {title}")
+        preview_lines.append("")
+    
+    # Try to get meaningful content from the beginning
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Skip headers that might be metadata
+        if line.lower().startswith(('auteur:', 'bron:', 'datum:', 'pagina:', 'hoofdstuk:')):
+            continue
+            
+        # Add line if it contributes to understanding
+        if char_count + len(line) <= PREVIEW_LENGTH:
+            preview_lines.append(line)
+            char_count += len(line) + 2  # +2 for \n\n
+        else:
+            # Add partial line and break
+            remaining_chars = PREVIEW_LENGTH - char_count
+            if remaining_chars > 50:  # Only add if meaningful portion remains
+                preview_lines.append(line[:remaining_chars] + "...")
+            break
+    
+    # Add summary footer
+    preview_lines.append("")
+    preview_lines.append(f"[Dit is een preview van een document met {content_length:,} karakters. De volledige inhoud is beschikbaar voor AI verwerking en blog generatie.]")
+    
+    preview = "\n\n".join(preview_lines)
+    
+    return preview, is_large
+
 # Document routes
 @api_router.post("/documents", response_model=Document)
 async def create_document(doc: DocumentCreate):

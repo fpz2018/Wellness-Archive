@@ -851,9 +851,6 @@ const KnowledgeBase = () => {
   };
 
   // Generate consumer-friendly blog title
-  const [generatingTitle, setGeneratingTitle] = useState(false);
-  const [generatedTitle, setGeneratedTitle] = useState("");
-  
   const handleGenerateBlogTitle = async () => {
     if (!selectedDoc) return;
     

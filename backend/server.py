@@ -562,6 +562,9 @@ async def paste_document(
         # Generate preview for large documents
         preview, is_large = generate_document_preview(translated_content, title)
         
+        # Generate one-liner for Make.com automation
+        one_liner = generate_oneliner_mock(title, translated_content)
+        
         # Create document
         doc = Document(
             title=title,
@@ -570,6 +573,7 @@ async def paste_document(
             content=translated_content,
             content_preview=preview if is_large else None,
             is_large_document=is_large,
+            one_liner=one_liner,
             tags=tags,
             references=references,
             file_size=len(translated_content),

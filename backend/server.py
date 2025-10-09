@@ -45,6 +45,8 @@ class Document(BaseModel):
     category: str
     file_type: str
     content: str
+    content_preview: Optional[str] = None  # Short excerpt for UI display
+    is_large_document: bool = False  # Flag for large documents
     tags: List[str] = []
     references: List[str] = []
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -54,8 +56,6 @@ class Document(BaseModel):
     has_original_file: bool = False
     original_language: Optional[str] = None
     was_translated: bool = False
-    original_filename: Optional[str] = None
-    has_original_file: bool = False
 
 class DocumentCreate(BaseModel):
     title: str

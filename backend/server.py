@@ -1225,6 +1225,65 @@ async def get_stats():
         "categories": category_counts
     }
 
+@api_router.get("/export/oneliners")
+async def export_oneliners():
+    """Export all document one-liners in CSV format for Make.com automation"""
+    try:
+        documents = await db.documents.find({}, {
+            "id": 1, "title": 1, "category": 1, "one_liner": 1, 
+            "created_at": 1, "tags": 1, "_id": 0
+        }).to_list(length=None)
+        
+        # Prepare data for spreadsheet export
+        export_data = []
+        for doc in documents:
+            export_data.append({
+                "id": doc.get("id", ""),
+                "title": doc.get("title", ""),
+                "category": doc.get("category", ""),
+                "one_liner": doc.get("one_liner", ""),
+                "tags": ", ".join(doc.get("tags", [])),
+                "created_date": doc.get("created_at", "").split("T")[0] if doc.get("created_at") else ""
+            })
+        
+        return {
+            "success": True,
+            "count": len(export_data),
+            "data": export_data
+        }
+        
+    except Exception as e:
+        logging.error(f"Export error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/documents/{document_id}/regenerate-oneliner")
+async def regenerate_oneliner(document_id: str):
+    """Regenerate one-liner for a specific document"""
+    try:
+        # Get document
+        doc = await db.documents.find_one({"id": document_id})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document niet gevonden")
+        
+        # Generate new one-liner
+        new_oneliner = generate_oneliner_mock(doc["title"], doc["content"])
+        
+        # Update document
+        await db.documents.update_one(
+            {"id": document_id},
+            {"$set": {"one_liner": new_oneliner}}
+        )
+        
+        return {
+            "success": True,
+            "document_id": document_id,
+            "new_oneliner": new_oneliner
+        }
+        
+    except Exception as e:
+        logging.error(f"Regenerate oneliner error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/")
 async def root():
     return {"message": "Wellness Knowledge Archive API"}

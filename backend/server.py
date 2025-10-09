@@ -498,6 +498,9 @@ async def upload_document(
         # Generate preview for large documents
         preview, is_large = generate_document_preview(translated_content, doc_title)
         
+        # Generate one-liner for Make.com automation
+        one_liner = generate_oneliner_mock(doc_title, translated_content)
+        
         # Create document
         doc = Document(
             title=doc_title,
@@ -506,6 +509,7 @@ async def upload_document(
             content=translated_content,
             content_preview=preview if is_large else None,
             is_large_document=is_large,
+            one_liner=one_liner,
             tags=tags,
             references=references,
             file_size=len(translated_content),

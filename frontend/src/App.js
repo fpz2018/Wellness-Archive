@@ -835,7 +835,49 @@ const KnowledgeBase = () => {
     }
   };
 
-  // Removed blog functionality - using Make.com automation instead
+  // Export oneliners for Make.com automation
+  const handleExportOneliners = async () => {
+    try {
+      const response = await axios.get(`${API}/export/oneliners`);
+      
+      if (response.data.success) {
+        // Convert to CSV format
+        const data = response.data.data;
+        const headers = ['ID', 'Titel', 'Categorie', 'Make.com Samenvatting', 'Tags', 'Datum'];
+        const csvContent = [
+          headers.join(','),
+          ...data.map(row => [
+            row.id,
+            `"${row.title}"`,
+            row.category,
+            `"${row.one_liner}"`,
+            `"${row.tags}"`,
+            row.created_date
+          ].join(','))
+        ].join('\n');
+        
+        // Download CSV file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', `wellness-archive-oneliners-${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        
+        toast.success(`${data.length} document samenvattingen geëxporteerd voor Make.com!`);
+      } else {
+        toast.error("Fout bij exporteren van data");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error(error.response?.data?.detail || "Fout bij exporteren van oneliners");
+    }
+  };
 
   const handlePasteSubmit = async () => {
     if (!pasteForm.title || !pasteForm.content) {

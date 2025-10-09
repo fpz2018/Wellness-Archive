@@ -349,6 +349,36 @@ def generate_document_preview(content: str, title: str = "") -> tuple[str, bool]
     
     return preview, is_large
 
+def generate_oneliner_mock(title: str, content: str) -> str:
+    """Generate a concise one-sentence summary for Make.com automation"""
+    
+    # Simple mock implementation - extract key concepts
+    words = content.lower().split()
+    
+    # Common orthomolecular/health keywords to look for
+    health_keywords = [
+        'vitamine', 'mineralen', 'supplement', 'voeding', 'gezondheid', 
+        'orthomoleculair', 'behandeling', 'therapie', 'preventie',
+        'darm', 'microbioom', 'ontstekingsremming', 'antioxidant',
+        'stress', 'energie', 'immuniteit', 'herstel', 'balans'
+    ]
+    
+    # Find relevant keywords in content
+    found_keywords = [kw for kw in health_keywords if kw in ' '.join(words)][:3]
+    
+    # Generate context-aware one-liner
+    if 'vitamine' in found_keywords or 'mineralen' in found_keywords:
+        return f"Onderzoek naar de rol van vitamines en mineralen bij {title.lower()}, met focus op orthomoleculaire behandelingsmogelijkheden."
+    elif 'darm' in found_keywords or 'microbioom' in found_keywords:
+        return f"Inzichten over darmgezondheid en microbioom in relatie tot {title.lower()}, belangrijk voor holistische gezondheidszorg."
+    elif 'ontstekingsremming' in found_keywords or 'antioxidant' in found_keywords:
+        return f"Evidence voor ontstekingsremmende en antioxidantrijke interventies bij {title.lower()}, geschikt voor natuurgeneeskundige praktijk."
+    elif 'stress' in found_keywords or 'energie' in found_keywords:
+        return f"Natuurlijke strategieën voor stress- en energiemanagement gerelateerd aan {title.lower()}, toepasbaar in orthomoleculaire behandeling."
+    else:
+        # Generic health-focused one-liner
+        return f"Praktische inzichten over {title.lower()} vanuit orthomoleculair perspectief, relevant voor natuurgeneeskundige behandeling en preventie."
+
 # Document routes
 @api_router.post("/documents", response_model=Document)
 async def create_document(doc: DocumentCreate):

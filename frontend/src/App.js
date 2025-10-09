@@ -855,11 +855,11 @@ const KnowledgeBase = () => {
   const [generatedTitle, setGeneratedTitle] = useState("");
   
   const handleGenerateBlogTitle = async () => {
-    if (!selectedDocument) return;
+    if (!selectedDoc) return;
     
     setGeneratingTitle(true);
     try {
-      const response = await axios.post(`${API}/documents/${selectedDocument.id}/generate-blog-title`);
+      const response = await axios.post(`${API}/documents/${selectedDoc.id}/generate-blog-title`);
       
       if (response.data.success) {
         setGeneratedTitle(response.data.blog_title);

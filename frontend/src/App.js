@@ -748,6 +748,7 @@ const KnowledgeBase = () => {
         content: response.data.content
       });
       setEditMode(false);
+      setShowFullContent(false);  // Reset to preview mode for new document
     } catch (error) {
       toast.error("Fout bij ophalen document");
     }

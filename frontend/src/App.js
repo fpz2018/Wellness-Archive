@@ -1172,18 +1172,7 @@ const KnowledgeBase = () => {
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3 flex-1">
-                          <input
-                            type="checkbox"
-                            checked={selectedDocuments.has(doc.id)}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              handleDocumentSelect(doc.id);
-                            }}
-                            className="mt-1 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                            data-testid={`select-doc-${doc.id}`}
-                          />
-                          <div className="flex-1">
+                        <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-semibold text-sm">{doc.title}</h4>
                               {doc.is_large_document && (

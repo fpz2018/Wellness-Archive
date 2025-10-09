@@ -380,6 +380,90 @@ def generate_oneliner_mock(title: str, content: str) -> str:
         # Generic health-focused one-liner
         return f"Praktische inzichten over {title.lower()} vanuit orthomoleculair perspectief, relevant voor natuurgeneeskundige behandeling en preventie."
 
+def generate_consumer_blog_title_mock(title: str, content: str) -> str:
+    """Generate consumer-friendly blog title like the examples provided"""
+    
+    words = content.lower().split()
+    
+    # Keywords to identify content themes
+    pain_keywords = ['pijn', 'kramp', 'spierkramp', 'artritis', 'ontstekingsremming']
+    gut_keywords = ['darm', 'spijsvertering', 'microbioom', 'probiotica', 'vezels']
+    vitamin_keywords = ['vitamine', 'mineralen', 'supplement', 'tekort', 'deficiëntie']
+    hormone_keywords = ['hormoon', 'ghreline', 'leptine', 'insuline', 'cortisol']
+    stress_keywords = ['stress', 'angst', 'slaap', 'vermoeidheid', 'burnout']
+    seasonal_keywords = ['winter', 'koud', 'verkouden', 'griep', 'immuniteit']
+    energy_keywords = ['energie', 'vermoeidheid', 'moe', 'uitputting']
+    
+    # Find dominant theme
+    found_words = ' '.join(words)
+    
+    if any(kw in found_words for kw in pain_keywords):
+        options = [
+            "de beste voedingssupplementen bij pijn",
+            "top 5 natuurlijke pijnstillers",
+            "orthomoleculaire aanpak bij chronische pijn",
+            "voeding tegen ontstekingsreacties"
+        ]
+    elif any(kw in found_words for kw in gut_keywords):
+        options = [
+            "de beste voedingsmiddelen voor je darmen",
+            "top 5 supplementen voor een gezonde darm",
+            "hoe verbeter je je darmgezondheid natuurlijk",
+            "probiotica: wat werkt echt?"
+        ]
+    elif any(kw in found_words for kw in vitamin_keywords):
+        if 'vitamine d' in found_words or 'vitamin d' in found_words:
+            options = [
+                "hoe optimaliseer je vitamine D in de winter",
+                "vitamine D tekort: wat kun je er zelf aan doen",
+                "de beste bronnen van vitamine D"
+            ]
+        else:
+            options = [
+                "top 5 voedingssupplementen die iedereen nodig heeft",
+                "welke vitamines heb je echt nodig",
+                "supplementen: waar moet je op letten"
+            ]
+    elif any(kw in found_words for kw in hormone_keywords):
+        if 'ghreline' in found_words:
+            return "ghreline: het belangrijke hongerhormoon"
+        elif 'leptine' in found_words:
+            return "leptine: wat is het en waar moet je op letten?"
+        else:
+            options = [
+                "hormonen in balans: zo doe je dat",
+                "natuurlijke hormoonbalans: tips en tricks"
+            ]
+    elif any(kw in found_words for kw in stress_keywords):
+        options = [
+            "stress en voeding: hoe zit dat?",
+            "natuurlijke stressverlichtende voedingsmiddelen",
+            "voeding voor een beter humeur"
+        ]
+    elif any(kw in found_words for kw in seasonal_keywords):
+        options = [
+            "snotterig en verkouden? dit kun je er vanuit orthomoleculair perspectief zelf aan doen",
+            "natuurlijke griepbestrijders uit je keuken",
+            "boost je immuniteit in de winter"
+        ]
+    elif any(kw in found_words for kw in energy_keywords):
+        options = [
+            "natuurlijke energieboosters die echt werken",
+            "vermoeidheid aanpakken met voeding",
+            "top 5 supplementen tegen vermoeidheid"
+        ]
+    else:
+        # Generic health topics
+        options = [
+            "natuurlijke gezondheid: waar begin je",
+            "orthomoleculaire voeding voor beginners",
+            "gezonde voeding: praktische tips",
+            "supplementen: de basis die je moet weten"
+        ]
+    
+    # Return first option (could be randomized)
+    return options[0]
+
 # Document routes
 @api_router.post("/documents", response_model=Document)
 async def create_document(doc: DocumentCreate):

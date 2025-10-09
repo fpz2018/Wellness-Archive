@@ -1246,7 +1246,6 @@ const KnowledgeBase = () => {
                                 <Badge variant="secondary" className="text-xs">+{doc.tags.length - 3}</Badge>
                               )}
                             </div>
-                          </div>
                         </div>
                         <Button
                           variant="ghost"

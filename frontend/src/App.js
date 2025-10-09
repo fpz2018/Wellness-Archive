@@ -835,47 +835,28 @@ const KnowledgeBase = () => {
     }
   };
 
-  // Export oneliners for Make.com automation
-  const handleExportOneliners = async () => {
+  // Generate consumer-friendly blog title
+  const [generatingTitle, setGeneratingTitle] = useState(false);
+  const [generatedTitle, setGeneratedTitle] = useState("");
+  
+  const handleGenerateBlogTitle = async () => {
+    if (!selectedDocument) return;
+    
+    setGeneratingTitle(true);
     try {
-      const response = await axios.get(`${API}/export/oneliners`);
+      const response = await axios.post(`${API}/documents/${selectedDocument.id}/generate-blog-title`);
       
       if (response.data.success) {
-        // Convert to CSV format
-        const data = response.data.data;
-        const headers = ['ID', 'Titel', 'Categorie', 'Make.com Samenvatting', 'Tags', 'Datum'];
-        const csvContent = [
-          headers.join(','),
-          ...data.map(row => [
-            row.id,
-            `"${row.title}"`,
-            row.category,
-            `"${row.one_liner}"`,
-            `"${row.tags}"`,
-            row.created_date
-          ].join(','))
-        ].join('\n');
-        
-        // Download CSV file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        if (link.download !== undefined) {
-          const url = URL.createObjectURL(blob);
-          link.setAttribute('href', url);
-          link.setAttribute('download', `wellness-archive-oneliners-${new Date().toISOString().split('T')[0]}.csv`);
-          link.style.visibility = 'hidden';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-        
-        toast.success(`${data.length} document samenvattingen geëxporteerd voor Make.com!`);
+        setGeneratedTitle(response.data.blog_title);
+        toast.success("Blog titel gegenereerd!");
       } else {
-        toast.error("Fout bij exporteren van data");
+        toast.error("Fout bij genereren titel");
       }
     } catch (error) {
-      console.error("Export error:", error);
-      toast.error(error.response?.data?.detail || "Fout bij exporteren van oneliners");
+      console.error("Generate title error:", error);
+      toast.error(error.response?.data?.detail || "Fout bij genereren blog titel");
+    } finally {
+      setGeneratingTitle(false);
     }
   };
 

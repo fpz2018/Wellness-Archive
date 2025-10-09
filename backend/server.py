@@ -1341,32 +1341,32 @@ async def export_oneliners():
         logging.error(f"Export error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.post("/documents/{document_id}/regenerate-oneliner")
-async def regenerate_oneliner(document_id: str):
-    """Regenerate one-liner for a specific document"""
+@api_router.post("/documents/{document_id}/generate-blog-title")
+async def generate_blog_title(document_id: str):
+    """Generate consumer-friendly blog title for a document"""
     try:
         # Get document
         doc = await db.documents.find_one({"id": document_id})
         if not doc:
             raise HTTPException(status_code=404, detail="Document niet gevonden")
         
-        # Generate new one-liner
-        new_oneliner = generate_oneliner_mock(doc["title"], doc["content"])
+        # Generate consumer-friendly blog title
+        blog_title = generate_consumer_blog_title_mock(doc["title"], doc["content"])
         
-        # Update document
+        # Update document with generated title
         await db.documents.update_one(
             {"id": document_id},
-            {"$set": {"one_liner": new_oneliner}}
+            {"$set": {"consumer_blog_title": blog_title}}
         )
         
         return {
             "success": True,
             "document_id": document_id,
-            "new_oneliner": new_oneliner
+            "blog_title": blog_title
         }
         
     except Exception as e:
-        logging.error(f"Regenerate oneliner error: {str(e)}")
+        logging.error(f"Generate blog title error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/")

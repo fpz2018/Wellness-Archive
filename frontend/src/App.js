@@ -1396,6 +1396,45 @@ const KnowledgeBase = () => {
 
                       <Separator />
 
+                      {/* Blog Titel Generator */}
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Blog Titel Generator
+                        </h4>
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 rounded-lg border border-purple-200">
+                          <p className="text-xs text-purple-700 mb-3">
+                            Genereer een consument-vriendelijke blog titel voor dit artikel
+                          </p>
+                          
+                          {generatedTitle && (
+                            <div className="mb-3 p-2 bg-white rounded border border-purple-200">
+                              <p className="text-sm font-medium text-purple-900">"{generatedTitle}"</p>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => navigator.clipboard.writeText(generatedTitle)}
+                                className="text-xs mt-2"
+                              >
+                                <Copy className="h-3 w-3 mr-1" />
+                                Kopiëren
+                              </Button>
+                            </div>
+                          )}
+                          
+                          <Button 
+                            onClick={handleGenerateBlogTitle}
+                            disabled={generatingTitle}
+                            className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+                            size="sm"
+                          >
+                            {generatingTitle ? "Genereren..." : "Genereer Blog Titel"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      <Separator />
+
                       <div>
                         <h4 className="text-sm font-semibold mb-2">Inhoud</h4>
                         <div className="prose prose-sm max-w-none">

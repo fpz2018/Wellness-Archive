@@ -525,6 +525,30 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* One-liner for Make.com */}
+            {selectedDocument.one_liner && (
+              <div>
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Make.com Samenvatting
+                </h3>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-900 italic">{selectedDocument.one_liner}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigator.clipboard.writeText(selectedDocument.one_liner)}
+                      className="text-xs"
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Kopiëren
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Tags */}
             <div>
               <h3 className="font-semibold mb-2 flex items-center gap-2">

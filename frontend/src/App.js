@@ -525,29 +525,42 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* One-liner for Make.com */}
-            {selectedDocument.one_liner && (
-              <div>
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Make.com Samenvatting
-                </h3>
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-900 italic">{selectedDocument.one_liner}</p>
-                  <div className="flex items-center gap-2 mt-2">
+            {/* Blog Titel Generator */}
+            <div>
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Blog Titel Generator
+              </h3>
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                <p className="text-xs text-purple-700 mb-3">
+                  Genereer een consument-vriendelijke blog titel voor dit artikel
+                </p>
+                
+                {generatedTitle && (
+                  <div className="mb-3 p-3 bg-white rounded border border-purple-200">
+                    <p className="text-sm font-medium text-purple-900">"{generatedTitle}"</p>
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => navigator.clipboard.writeText(selectedDocument.one_liner)}
-                      className="text-xs"
+                      onClick={() => navigator.clipboard.writeText(generatedTitle)}
+                      className="text-xs mt-2"
                     >
                       <Copy className="h-3 w-3 mr-1" />
                       Kopiëren
                     </Button>
                   </div>
-                </div>
+                )}
+                
+                <Button 
+                  onClick={handleGenerateBlogTitle}
+                  disabled={generatingTitle}
+                  className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
+                  size="sm"
+                >
+                  {generatingTitle ? "Genereren..." : "Genereer Blog Titel"}
+                </Button>
               </div>
-            )}
+            </div>
 
             {/* Tags */}
             <div>

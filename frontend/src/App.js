@@ -661,6 +661,7 @@ const KnowledgeBase = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
   const [importType, setImportType] = useState("paste");
   const [pasteForm, setPasteForm] = useState({
     title: "",

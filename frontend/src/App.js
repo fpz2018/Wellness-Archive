@@ -722,6 +722,8 @@ const KnowledgeBase = () => {
     description: ""
   });
   const [uploading, setUploading] = useState(false);
+  const [generatingTitle, setGeneratingTitle] = useState(false);
+  const [generatedTitle, setGeneratedTitle] = useState("");
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 

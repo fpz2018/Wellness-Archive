@@ -1343,11 +1343,23 @@ const KnowledgeBase = () => {
                             data-testid={`select-doc-${doc.id}`}
                           />
                           <div className="flex-1">
-                            <h4 className="font-semibold text-sm mb-1">{doc.title}</h4>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-sm">{doc.title}</h4>
+                              {doc.is_large_document && (
+                                <Badge variant="outline" className="text-xs px-1 py-0">
+                                  Groot
+                                </Badge>
+                              )}
+                            </div>
                             <p className="text-xs text-muted-foreground mb-2">
                               {doc.category} • {new Date(doc.created_at).toLocaleDateString('nl-NL')}
+                              {doc.file_size && (
+                                <> • {doc.file_size.toLocaleString()} karakters</>
+                              )}
                             </p>
-                            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{doc.content}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                              {doc.is_large_document && doc.content_preview ? doc.content_preview.substring(0, 150) + '...' : doc.content.substring(0, 150) + (doc.content.length > 150 ? '...' : '')}
+                            </p>
                             <div className="flex gap-1 flex-wrap">
                               {doc.tags.slice(0, 3).map((tag, idx) => (
                                 <Badge key={idx} variant="secondary" className="text-xs bg-teal-100 text-teal-800">{tag}</Badge>
